@@ -89,21 +89,23 @@ function get_m3u8() {
 
     hls = new Hls({ id : this.id });
     hls.attachMedia(this);
-    hls.loadSource(dns + '/video/m3u8/' + this.id + '.m3u8?video_server=cncdn');
+    hls.loadSource('https://7.bbdata.cc/videos/' + hls.config.id + '/g.m3u8');
 
     hls.on(Hls.Events.MANIFEST_PARSED, function() {
         video.play();
     });
 
     hls.on(Hls.Events.ERROR, function (event, data) {
-        console.log('ERROR');
+        if (!data.fatal) {
+            return;
+        }
 
-        let url = 'https://7.bbdata.cc/videos/' + hls.config.id + '/g.m3u8';
+        console.log(hls.url + ' type:' + data.type + ' details:' + data.details);
 
         hls.destroy();
         hls = new Hls();
         hls.attachMedia(video);
-        hls.loadSource(url);
+        hls.loadSource(dns + '/video/m3u8/' + this.id + '.m3u8?video_server=cncdn');
 
         hls.on(Hls.Events.MANIFEST_PARSED, function() {
             video.play();
