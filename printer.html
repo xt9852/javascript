@@ -35,6 +35,7 @@
   var enc   = [];
   var step  = [];   // 步进标记
   var left  = 0;
+  var angle = 45;
 
   // p鼠标位置,d增量鼠标位置变化,a角度,l上次角度
   var mouse_data = { drag:false, p : {x:0, y:0}, a : {x:-45, y:0}, d : {x:0, y:0}, l : {x:0, y:0} };
@@ -319,32 +320,35 @@
           _f(x[n][3],y[n][3],z0, x[n][3],y[n][3],z1, x[n][6],y[n][6],z0, x[n][6],y[n][6],z1, 0,0,1);// 齿前
         }
 
-        if (id == 0 && p == 0) {                                                                    // 轮左
+        if (id == 0 && p == 0) {                                                                                // 轮左
           _t(x[t][1],y[t][1],z0, x[t][2],y[t][2],z0, 0,0,z0, 1,1,0);
           _t(x[t][1],y[t][1],z0, x[n][2],y[n][2],z0, 0,0,z0, 1,1,0);
           _f(x[t][1],y[t][1],z0, x[t][2],y[t][2],z0, x[t][3],y[t][3],z0, x[t][4],y[t][4],z0, 0,1,0);
           _f(x[t][1],y[t][1],z0, x[n][2],y[n][2],z0, x[t][3],y[t][3],z0, x[n][4],y[n][4],z0, 0,1,0);
 
-          _f(a-.01,b+.01,z0+.0001, a+.01,b+.01,z0+.0001, a-.01,b-.01,z0+.0001, a+.01,b-.01,z0+.0001, 1,0,0);
+          _f(a-.01,b+.01,z0+.0001, a+.01,b+.01,z0+.0001, a-.01,b-.01,z0+.0001, a+.01,b-.01,z0+.0001, 1,0,0);    // 触点
+          rotateZ_(vtx, 360 / wheel.tooth.num * t, vtx.length / 3 - 6, 6, a, b);
         }
 
         if (id == 0 && p == 0 && step[id][t] == 1) {
-          _t(x[t][3],y[t][3],z0, x[t][4],y[t][4],z0, x[t][6],y[t][6],z0, 1,1,0);                    // 齿左
+          _t(x[t][3],y[t][3],z0, x[t][4],y[t][4],z0, x[t][6],y[t][6],z0, 1,1,0);                                // 齿左
         }
 
         if (id == 0 && p == 0 && step[id][t] == 1 && step[id][n] == 0) {
-          _t(x[n][3],y[n][3],z0, x[n][4],y[n][4],z0, x[n][6],y[n][6],z0, 1,1,0);                    // 齿左
+          _t(x[n][3],y[n][3],z0, x[n][4],y[n][4],z0, x[n][6],y[n][6],z0, 1,1,0);                                // 齿左
         }
 
         if (id == wheel.num - 1 && p == 2) {
-          _t(x[t][3],y[t][3],z1, x[t][4],y[t][4],z1, x[t][6],y[t][6],z1, 1,1,0);                    // 轮右
+          _t(x[t][3],y[t][3],z1, x[t][4],y[t][4],z1, x[t][6],y[t][6],z1, 1,1,0);                                // 轮右
           _t(x[t][3],y[t][3],z1, x[t][4],y[t][4],z1, 0,0,z1, 1,1,0);
           _t(x[t][3],y[t][3],z1, x[n][4],y[n][4],z1, 0,0,z1, 1,1,0);
-          _f(a-.01,b+.01,z1-.0001, a+.01,b+.01,z1-.0001, a-.01,b-.01,z1-.0001, a+.01,b-.01,z1-.0001, 1,0,0);
+
+          _f(a-.01,b+.01,z1-.0001, a+.01,b+.01,z1-.0001, a-.01,b-.01,z1-.0001, a+.01,b-.01,z1-.0001, 1,0,0);    // 触点
+          rotateZ_(vtx, 360 / wheel.tooth.num * t, vtx.length / 3 - 6, 6, a, b);
         }
 
         if (p == 1) {
-          _f(x[n][4],y[n][4],z0, x[n][4],y[n][4],z1, x[t][3],y[t][3],z0, x[t][3],y[t][3],z1, 0,1,0);// 齿槽
+          _f(x[n][4],y[n][4],z0, x[n][4],y[n][4],z1, x[t][3],y[t][3],z0, x[t][3],y[t][3],z1, 0,1,0);            // 齿槽
         }
 
         if (p == 2) {
@@ -404,7 +408,7 @@
   }
 
   // 生成对象
-  function make_other() {
+  function make_other(angle) {
     console.log('-------make_other');
 
     axis[0].x = 0;
@@ -445,43 +449,15 @@
     }
 
     // 旋转45度
-    rotateZ_(vtx, 45, axis[0].beg, axis[0].len, 0, 0);
+    rotateZ_(vtx, angle, axis[0].beg, axis[0].len, 0, 0);
   }
 
   // 生成对象
-  function make_obj() {
-    var clr_1;
-    var vtx_1;
-    var idx_1;
-    var clr_2;
-    var vtx_2;
-    var idx_2;
-
-    function get_last() {
-      clr_1 = clr.length / 3;
-      vtx_1 = vtx.length / 3;
-    }
-
-    function get_data() {
-      clr_2 = clr.length / 3;
-      vtx_2 = vtx.length / 3;
-
-      console.log('add,clr,/3:', clr_2 - clr_1, clr_2, clr_2 / 3);
-      console.log('add,vtx,/3:', vtx_2 - vtx_1, vtx_2, vtx_2 / 3);
-      console.log('--------------------------------');
-
-      clr_1 = clr_2;
-      vtx_1 = vtx_2;
-    }
-
+  function make_obj(angle) {
     clr.length = 0;
     vtx.length = 0;
 
-    get_last();
-
-    make_other();
-
-    get_data();
+    make_other(angle);
 
     drive.beg = vtx.length / 3;
 
@@ -490,9 +466,6 @@
     }
 
     drive.len = vtx.length / 3 - drive.beg;
-
-    get_data();
-
     wheel.beg = vtx.length / 3;
 
     for (var i = 0; i < wheel.num; i++) {
@@ -500,9 +473,6 @@
     }
 
     wheel.len = vtx.length / 3 - wheel.beg;
-
-    get_data();
-
     wheel.text.beg = vtx.length / 3;
 
     for (var i = 0; i < wheel.num; i++) {
@@ -510,8 +480,6 @@
     }
 
     wheel.text.len = vtx.length / 3 - wheel.text.beg;
-
-    get_data();
   }
 
   //===================== Mouse events =====================
@@ -795,11 +763,8 @@
     gl.viewport(0.0, 0.0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    if (wheel.text.len > 0) {
-      gl.drawArrays(gl.POINTS, wheel.text.beg, wheel.text.len);
-    }
-
     gl.drawArrays(gl.TRIANGLES, 0, vtx.length / 3);
+    gl.drawArrays(gl.POINTS, wheel.text.beg, wheel.text.len);
 
     window.requestAnimationFrame(animate);
   }
@@ -830,7 +795,7 @@
   make_text_coord();
   make_wheel_coord();
   make_drive_coord();
-  make_obj();
+  make_obj(angle);
   main();
   drawing();
   animate(0);
@@ -856,7 +821,9 @@
       step[i][0] = tmp;
     }
 
-    make_obj();
+    angle = (angle + 360 / wheel.tooth.num) % 360;
+
+    make_obj(angle);
 
     main();
 
