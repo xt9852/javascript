@@ -1,5 +1,7 @@
 <canvas id="webgl" width="600" height="600"></canvas>
 
+<button onclick=next()>next</button>
+
 <script>
   "use strict";
 
@@ -30,8 +32,9 @@
   var y     = [];
   var z     = [];
   var txt   = [];
+  var enc   = [];
   var step  = [];   // 步进标记
-  var left;
+  var left  = 0;
 
   // p鼠标位置,d增量鼠标位置变化,a角度,l上次角度
   var mouse_data = { drag:false, p : {x:0, y:0}, a : {x:-45, y:0}, d : {x:0, y:0}, l : {x:0, y:0} };
@@ -40,10 +43,36 @@
   var drive = { x:[0,0], y:[0,0], cx:.05, cz:.02, beg:0, len:0, item:[] };
 
   // 轮子:数量,半径(触点,内,外,牙),宽(挡片,步进,密码,轮宽,总宽),间隔(部件间隔,轮子间隔),牙(数量,高,最底牙),各轮子位置
-  var wheel = { num:10, r:[.4,.45,.5,.53], cx:[.03,.05,.05,0,0], space:[.001,.001], tooth:{num:36,cy:.05,low:0}, beg:0,len:0, text:{beg:0,len:0}, item:[]};
+  var wheel = { num:10, r:[.4,.45,.5,.53], cx:[.03,.05,.05,0,0], space:[.001,.01], tooth:{num:36,cy:.05,low:0}, beg:0,len:0, text:{beg:0,len:0}, item:[]};
 
   // 部件:中心点,宽,高,位置,数量
   var axis = [];
+
+  // 三角形
+  function _t(p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,r,g,b) {
+     clr.push(r,g,b, r,g,b, r,g,b);
+     vtx.push(p0x,p0y,p0z, p1x,p1y,p1z, p2x,p2y,p2z);
+  }
+
+  // 面
+  function _f(p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,p3x,p3y,p3z,r,g,b) {
+     clr.push(r,g,b, r,g,b, r,g,b, r,g,b, r,g,b, r,g,b);
+     vtx.push(p0x,p0y,p0z, p1x,p1y,p1z, p3x,p3y,p3z, p0x,p0y,p0z, p2x,p2y,p2z, p3x,p3y,p3z);
+  }
+
+  // 环
+  function _r(h, z0, z1) {
+    for (var l = 0; l < x[h].length; l++) {
+      var n = (l == x[h].length - 1) ? 0 : (l + 1); // 下一面
+      _f(x[h][l],y[h][l],z0, x[h][l],y[h][l],z1, x[h][n],y[h][n],z0, x[h][n],y[h][n],z1, 0,1,1);        // 前后
+    }
+
+    for (var l = 0; l < x[h].length / 2; l++) {
+      var m = x[h].length - 1 - l;
+      _f(x[h][l],y[h][l],z0, x[h][l+1],y[h][l+1],z0, x[h][m],y[h][m],z0, x[h][m-1],y[h][m-1],z0, 1,0,1);// 左
+      _f(x[h][l],y[h][l],z1, x[h][l+1],y[h][l+1],z1, x[h][m],y[h][m],z1, x[h][m-1],y[h][m-1],z1, 1,0,1);// 右
+    }
+  }
 
   // 初始化数据
   function init() {
@@ -62,13 +91,13 @@
       wheel.item[i].part[2].z = wheel.item[i].part[1].z - wheel.cx[1] - wheel.space[0];
     }
 
-    // 驱动部件,0-步进推杆,1-密码推杆,2-步进锁杆,3-密码锁杆
+    // 驱动部件:0-步进推杆,1-密码推杆,2-步进锁杆,3-密码锁杆
     for (var i = 0; i < wheel.num; i++) {
       drive.item.push({part:[ {z:[0,0],beg:0,len:0},{z:[0,0],beg:0,len:0},{z:[0,0],beg:0,len:0},{z:[0,0],beg:0,len:0} ]});
-      drive.item[i].part[0].z[0] = wheel.item[i].part[1].z - 0.01;
-      drive.item[i].part[0].z[1] = wheel.item[i].part[2].z + 0.01;
-      drive.item[i].part[1].z[0] = wheel.item[i].part[2].z - 0.01;
-      drive.item[i].part[1].z[1] = drive.item[i].part[1].z[0] - wheel.cx[2] - wheel.space[1] - wheel.cx[0] + 0.02;
+      drive.item[i].part[0].z[0] = wheel.item[i].part[1].z - (wheel.cx[1] - drive.cz) / 2;
+      drive.item[i].part[0].z[1] = drive.item[i].part[0].z[0] - drive.cz;
+      drive.item[i].part[1].z[0] = wheel.item[i].part[2].z - (wheel.cx[2] - drive.cz) / 2;
+      drive.item[i].part[1].z[1] = drive.item[i].part[1].z[0] - drive.cz;
       drive.item[i].part[2].z[0] = wheel.item[i].part[1].z - (wheel.cx[1] - drive.cz) / 2;
       drive.item[i].part[2].z[1] = drive.item[i].part[2].z[0] - drive.cz;
       drive.item[i].part[3].z[0] = wheel.item[i].part[2].z - (wheel.cx[2] - drive.cz) / 2;
@@ -89,10 +118,16 @@
       step.push(tmp);
     }
 
+    // 密码
+    for (var i = 0; i < wheel.num * 2; i++) {
+       enc.push(Math.round(Math.random() * (wheel.tooth.num - 1)));
+    }
+
     console.log('wheel:', wheel);
     console.log('drive:', drive);
-    console.log('axis:', axis);
-    console.log('step:', step);
+    console.log('axis:',  axis);
+    console.log('step:',  step);
+    console.log('enc:',   enc);
   }
 
   // 生成文字的2维坐标
@@ -126,10 +161,11 @@
     var r;
     var s;
     var c;
-    var a = 360 / wheel.tooth.num * Math.PI / 180;
+    var a = -360 / wheel.tooth.num * Math.PI / 180;
     var l = wheel.r[3] - wheel.r[2];
     var b = Math.atan(l / wheel.tooth.cy);
     var d = wheel.tooth.cy / 16;
+    var tmp = [];
 
     for (var t = 0; t < num; t++) {
       r = a * t;
@@ -140,13 +176,23 @@
         y = -i*0.003;
         for (var j = 0; j < 16; j++) {
           if (mask[t*16 + i*num*16 + j] == '1') {
-            txt.push(x*c - y*s, y*c + x*s, j*0.003);
+            tmp.push(x*c - y*s, y*c + x*s, j*0.003);
           }
         }
       }
     }
 
-    console.log('txt/3:', txt.length / 3);
+    for (var i = 0; i < num; i++) {
+      txt[i] = [];
+
+      for (var j = 0; j < tmp.length; j++) {
+        txt[i].push(tmp[j]);
+      }
+
+      rotateZ_(txt[i], 360 / wheel.tooth.num * i, 0, tmp.length / 3, 0, 0);
+    }
+
+    console.log('tmp/3:', tmp.length / 3);
   }
 
   // 生成轮子的2维坐标
@@ -193,39 +239,19 @@
   function make_drive_coord() {
     console.log('-------make_drive_coord');
 
-    var tmp = [];
     var l = wheel.tooth.low;
 
     // 推杆
-    tmp.push(
-      x[0][3]+drive.cz, x[0][6]+drive.cz, x[0][6]+drive.cz, x[0][6]+2*drive.cz, x[0][6]+2*drive.cz, x[0][6], x[0][6]+0.001, x[0][3]+0.001,
-    );
-
-    x.push(tmp);
-    tmp = [];
-
-    tmp.push(
-      y[0][3],          y[0][6],          y[l][3]+drive.cz, y[l][3]+drive.cz, y[l][3],          y[l][3], y[0][6],       y[0][3],
-    );
-
-    y.push(tmp);
-    tmp = [];
-
-    console.log('drive0 pt:' + tmp.length);
+    x.push([ x[0][3]+drive.cx, x[0][6]+drive.cx, x[0][6]+drive.cx, x[0][6]+2*drive.cx, x[0][6]+drive.cx, x[0][6], x[0][6]+0.001, x[0][3]+0.001]);
+    y.push([ y[0][3],          y[0][6],          y[l][3]+drive.cx, y[l][3]+drive.cx,   y[l][3],          y[l][3], y[0][6],       y[0][3]]);
 
     // 锁杆
-    tmp.push(
-      x[l][3]+0.001, x[l][3], x[0][6]+drive.cx, x[0][6]+drive.cx, x[0][6], x[0][6], x[0][6]+2*drive.cx, x[0][6]+2*drive.cx, x[l][6],          x[l][6]+0.001,
-    );
+    x.push([ x[l][3]+0.001, x[l][3], x[0][6]+2.5*drive.cx, x[0][6]+2.5*drive.cx, x[0][6]+1.5*drive.cx, x[0][6]+2.5*drive.cx,  x[0][6]+3.5*drive.cx, x[0][6]+3.5*drive.cx, x[l][6],          x[l][6]+0.001 ]);
+    y.push([ y[l][3],       y[l][6], y[l][6],              y[l][3]+drive.cx,     y[l][3]+drive.cx,     y[l][3]+2*drive.cx,    y[l][3]+2*drive.cx,   y[l][6]-drive.cx,     y[l][6]-drive.cx, y[l][6] ]);
 
-    x.push(tmp);
-    tmp = [];
-
-    tmp.push(
-      y[l][3],       y[l][6], y[l][6],            y[l][3]+drive.cz,   y[l][3]+drive.cz,   y[l][3]+drive.cx, y[l][3]+drive.cx, y[l][6]-drive.cx,   y[l][6]-drive.cx, y[l][6],
-    );
-
-    y.push(tmp);
+    // 推杆头
+    x.push([ x[0][3]+drive.cz, x[0][6]+drive.cz, x[0][6]+0.001, x[0][3]+0.001]);
+    y.push([ y[0][3],          y[0][6],          y[0][6],       y[0][3]]);
 
     var i = wheel.tooth.num;
     var j = wheel.tooth.num + 1;
@@ -238,32 +264,20 @@
   }
 
   // 生成文字
-  function make_text(id) {
-    console.log('-------make_text id:', id);
+  function make_text(id, t) {
+    console.log('-------make_text id:', id, t);
 
     for (var i = 0; i < 2; i++) { // 每个轮子2列字母
       wheel.item[id].text[i].beg = vtx.length / 3;
 
-      for (var j = 0; j < txt.length; j += 3) {
-         clr.push(1,1,1);
-         vtx.push(txt[j], txt[j+1], wheel.item[id].part[i + 1].z - txt[j+2]);
+      for (var j = 3; j < txt[t[i]].length; j += 3) {
+        clr.push(1,1,1);
+        vtx.push(txt[t[i]][j], txt[t[i]][j+1], wheel.item[id].part[i + 1].z - txt[t[i]][j+2]);
       }
 
       wheel.item[id].text[i].len = vtx.length / 3 - wheel.item[id].text[i].beg;
       console.log('wheel['+ id +']['+ i +'] beg:' + wheel.item[id].text[i].beg, 'len:' + wheel.item[id].text[i].len);
     }
-  }
-
-  // 面
-  function _f(p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,p3x,p3y,p3z,r,g,b) {
-     clr.push(r,g,b, r,g,b, r,g,b, r,g,b, r,g,b, r,g,b);
-     vtx.push(p0x,p0y,p0z, p1x,p1y,p1z, p3x,p3y,p3z, p0x,p0y,p0z, p2x,p2y,p2z, p3x,p3y,p3z);
-  }
-
-  // 三角形
-  function _t(p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,r,g,b) {
-     clr.push(r,g,b, r,g,b, r,g,b);
-     vtx.push(p0x,p0y,p0z, p1x,p1y,p1z, p2x,p2y,p2z);
   }
 
   // 生成轮子
@@ -305,7 +319,7 @@
           _f(x[n][3],y[n][3],z0, x[n][3],y[n][3],z1, x[n][6],y[n][6],z0, x[n][6],y[n][6],z1, 0,0,1);// 齿前
         }
 
-        if (id == 0 && p == 0) {
+        if (id == 0 && p == 0) {                                                                    // 轮左
           _t(x[t][1],y[t][1],z0, x[t][2],y[t][2],z0, 0,0,z0, 1,1,0);
           _t(x[t][1],y[t][1],z0, x[n][2],y[n][2],z0, 0,0,z0, 1,1,0);
           _f(x[t][1],y[t][1],z0, x[t][2],y[t][2],z0, x[t][3],y[t][3],z0, x[t][4],y[t][4],z0, 0,1,0);
@@ -323,7 +337,7 @@
         }
 
         if (id == wheel.num - 1 && p == 2) {
-          _t(x[t][3],y[t][3],z1, x[t][4],y[t][4],z1, x[t][6],y[t][6],z1, 1,1,0);                    // 齿右
+          _t(x[t][3],y[t][3],z1, x[t][4],y[t][4],z1, x[t][6],y[t][6],z1, 1,1,0);                    // 轮右
           _t(x[t][3],y[t][3],z1, x[t][4],y[t][4],z1, 0,0,z1, 1,1,0);
           _t(x[t][3],y[t][3],z1, x[n][4],y[n][4],z1, 0,0,z1, 1,1,0);
           _f(a-.01,b+.01,z1-.0001, a+.01,b+.01,z1-.0001, a-.01,b-.01,z1-.0001, a+.01,b-.01,z1-.0001, 1,0,0);
@@ -357,25 +371,22 @@
 
     drive.item[id].beg = vtx.length / 3;
 
-    for (var i = 0; i < (x.length - wheel.tooth.num); i++) { // 驱动部件
+    // 驱动部件:0-步进推杆,1-密码推杆,2-步进锁杆,3-密码锁杆
+    for (var i = 0; i < 2; i++) {
       for (var j = 0; j < 2; j++) {
         var p = 2 * i + j;
         var k = wheel.tooth.num + i;
+        var h = wheel.tooth.num + 2;
         var z0 = drive.item[id].part[p].z[0];
         var z1 = drive.item[id].part[p].z[1];
 
         drive.item[id].part[p].beg = vtx.length / 3;
 
-        for (var l = 0; l < x[k].length; l++) {
-          var n = (l == x[k].length - 1) ? 0 : (l + 1); // 下一面
-          _f(x[k][l],y[k][l],z0, x[k][l],y[k][l],z1, x[k][n],y[k][n],z0, x[k][n],y[k][n],z1, 1,0,0);
+        if (i == 0 && j == 1) {
+          _r(h, z1, z1 - wheel.cx[2] / 2 - wheel.space[1] - wheel.cx[0] / 2);
         }
 
-        for (var l = 0; l < x[k].length / 2; l++) {
-          var m = x[k].length - 1 - l;
-          _f(x[k][l],y[k][l],z0, x[k][l+1],y[k][l+1],z0, x[k][m],y[k][m],z0, x[k][m-1],y[k][m-1],z0, 1,1,0);// 左
-          _f(x[k][l],y[k][l],z1, x[k][l+1],y[k][l+1],z1, x[k][m],y[k][m],z1, x[k][m-1],y[k][m-1],z1, 1,0,1);// 右
-        }
+        _r(k, z0, z1);
 
         drive.item[id].part[p].len = vtx.length / 3 - drive.item[id].part[p].beg;
         console.log('drive['+ id +']['+ p +'] beg:' + drive.item[id].part[p].beg, 'len:' + drive.item[id].part[p].len);
@@ -398,8 +409,8 @@
 
     axis[0].x = 0;
     axis[0].y = 0;
-    axis[1].x = x[0][6] + drive.cz / 2;
-    axis[1].y = y[0][6] - wheel.r[3] / 4;
+    axis[1].x = x[0][6] + drive.cx / 2;
+    axis[1].y = y[0][6] - wheel.r[3] / 3;
     axis[2].x = x[wheel.tooth.low][6] + wheel.r[3] / 2;
     axis[2].y = y[wheel.tooth.low][6] - drive.cx / 2;
 
@@ -455,13 +466,16 @@
       clr_2 = clr.length / 3;
       vtx_2 = vtx.length / 3;
 
-      console.log('-------clr/3:', clr_2 - clr_1, clr_2, clr_2 / 3);
-      console.log('-------vtx/3:', vtx_2 - vtx_1, vtx_2, vtx_2 / 3);
-      console.log('-----------------------------------------------');
+      console.log('add,clr,/3:', clr_2 - clr_1, clr_2, clr_2 / 3);
+      console.log('add,vtx,/3:', vtx_2 - vtx_1, vtx_2, vtx_2 / 3);
+      console.log('--------------------------------');
 
       clr_1 = clr_2;
       vtx_1 = vtx_2;
     }
+
+    clr.length = 0;
+    vtx.length = 0;
 
     get_last();
 
@@ -492,7 +506,7 @@
     wheel.text.beg = vtx.length / 3;
 
     for (var i = 0; i < wheel.num; i++) {
-      make_text(i);
+      make_text(i, [ enc[i * 2], enc[i * 2 + 1] ]);
     }
 
     wheel.text.len = vtx.length / 3 - wheel.text.beg;
@@ -820,5 +834,33 @@
   main();
   drawing();
   animate(0);
+
+  function next() {
+    console.clear();
+
+    for (var i = 0; i < wheel.num; i++) {
+      enc[i * 2] = (enc[i * 2] + 1) % wheel.tooth.num;
+
+      console.log(step[i][0]);
+
+      if (i == wheel.num - 1 || step[i + 1][0] == 0) {
+        enc[i * 2 + 1] = (enc[i * 2 + 1] + 1) % wheel.tooth.num;
+      }
+
+      var tmp = step[i][wheel.tooth.num - 1];
+
+      for (var j = wheel.tooth.num - 1; j > 0; j--) {
+        step[i][j] = step[i][j - 1];
+      }
+
+      step[i][0] = tmp;
+    }
+
+    make_obj();
+
+    main();
+
+    drawing();
+  }
 
 </script>
