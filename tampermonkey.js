@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Demo
 // @namespace    https://github.com/xt9852/tampermonkey_demo
-// @version      0.1
+// @version      1.0
 // @description  demo
 // @author       xt
 // @match        https://v88avnetwork.github.io/88av.html*
