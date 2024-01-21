@@ -5,15 +5,12 @@
 // @match        https://v88avnetwork.github.io/88av.html*
 // @require      https://cdn.jsdelivr.net/npm/hls.js
 // @require      https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js
-// @connect      88a2277.cc
+// @connect      88a2290.cc
 // @connect      tai99.net
-// @connect      t90319.xyz
 // @connect      t90639.com
-// @connect      t90976.xyz
-// @connect      oss.tstdjoiajojkla.com
-// @connect      imp.ooimz.com
-// @connect      1jubt.top
-// @connect      rou.pub/dizhi
+// @connect      t90827.xyz
+// @connect      yp1.fwlay.com
+// @connect      mm231.vip
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
@@ -53,6 +50,14 @@ function get_data(url, callback, param) {
     GM_xmlhttpRequest({
       method: 'GET',
       url: url,
+      headers: {
+          'test': 'test',
+          'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
+      },
+      timeout: 2000,
+      ontimeout(xhr) {
+          console.log('timeout: ' + url);
+      },
       onload(xhr) {
           if (200 != xhr.status) {
               let div = document.createElement("div");
@@ -61,11 +66,21 @@ function get_data(url, callback, param) {
               return;
           }
 
-          console.log('get_data: ' + url + ' status:' + xhr.status + ' finalUrl: ' + xhr.finalUrl);
-
           callback(xhr.responseText, param, (xhr.finalUrl != url) ? xhr.finalUrl : null);
       }
     });
+    console.log(url);
+}
+
+function get_domain0(id, now) {
+    g_domain[id] = document.getElementsByTagName('a')[3].href;
+    GM_setValue('date' + id, now);
+    GM_setValue('domain' + id, g_domain[id]);
+    console.log('set g_domain[' + id + ']: ' + g_domain[id]);
+}
+
+function get_domain1(id, now) {
+    get_data('http://tai99.net/', get_domain1_callback, [ id, now ])
 }
 
 function get_domain1_callback(responseText, param, finalUrl) {
@@ -73,9 +88,8 @@ function get_domain1_callback(responseText, param, finalUrl) {
     let now = param[1];
 
     if (finalUrl) {
-        console.log(finalUrl.substring(0, finalUrl.lastIndexOf('?')));
-
-        g_domain[id] = finalUrl;
+        let pos = finalUrl.lastIndexOf('?');
+        g_domain[id] = (pos < 0) ? finalUrl : finalUrl.substring(0, pos);
     } else {
         let reg = /href="([^"]+)"/g;
         let addr = reg.exec(responseText);
@@ -84,33 +98,37 @@ function get_domain1_callback(responseText, param, finalUrl) {
 
     GM_setValue('date' + id, now);
     GM_setValue('domain' + id, g_domain[id]);
-
     console.log('set g_domain[' + id + ']: ' + g_domain[id]);
 }
 
-function get_domain1(id, now) {
-    get_data('http://tai99.net/', get_domain1_callback, [ id, now ])
-}
-
-function get_domain0(id, now) {
-    g_domain[id] = document.getElementsByTagName('a')[2].href;
-
+function get_domain2(id, now) {
+    g_domain[id] = 'https://mm231.vip/';
     GM_setValue('date' + id, now);
     GM_setValue('domain' + id, g_domain[id]);
-
     console.log('set g_domain[' + id + ']: ' + g_domain[id]);
 }
 
 function get_last_domain(id, get_domain) {
     let now = new Date().toLocaleDateString();
     let date = GM_getValue('date' + id, '');
-    console.log('now:' + now + ' id:' + id + ' date:' + date);
 
     if (date == now) {
         g_domain[id] = GM_getValue('domain' + id, '');
         console.log('g_domain[' + id + ']: ' + g_domain[id]);
     } else {
         get_domain(id, now);
+    }
+}
+
+function get_addr_pos_num() {
+    let ret;
+
+    if ((ret = /\?([^\/]+)\/(.*?)([0-9]*)$/.exec(location.href)) !== null) {
+        g_addr[0] = ret[1];
+        g_addr[1] = ret[2] + ret[3];
+        g_pos = ret.index + ret[1].length + ret[2].length + 2;
+        g_num = parseInt(ret[3]);
+        console.log('addr:' + g_addr + ' pos:' + g_pos + ' num:' + g_num);
     }
 }
 
@@ -125,31 +143,34 @@ function new_link(name, addr) {
 function add_link() {
     document.body = document.createElement('body');
 
-    new_link('播放', '?m3u8/');
+    new_link('m3u8', '?m3u8/');
 
     new_link('/', '?88/');
-    new_link('91', '?88/categories/91/1');
-    new_link('最新', '?88/video/latest/1');
-    new_link('日本', '?88/jav/1');
-    new_link('欧美', '?88/oumei/1');
-    new_link('查找', '?88/search/ca/1');
+    new_link('9', '?88/categories/91/1');
+    new_link('L', '?88/video/latest/1');
+    new_link('J', '?88/jav/1');
+    new_link('E', '?88/oumei/1');
+    new_link('S', '?88/search/ca/1');
 
     new_link('/', '?th/');
-    new_link('吃瓜', '?th/category/?category_id=101&page=1');
-    new_link('国产', '?th/category/?category_id=1&page=1');
-    new_link('日韩', '?th/category/?category_id=4&page=1');
-    new_link('欧美', '?th/category/?category_id=25&page=1');
-    new_link('动漫', '?th/category/?category_id=145&page=1');
-    new_link('乱伦', '?th/category/?category_id=69&page=1');
-    new_link('偷拍', '?th/category/?category_id=56&page=1');
-    new_link('爱奴', '?th/category/?category_id=71&page=1');
-    new_link('萝莉', '?th/category/?category_id=70&page=1');
-    new_link('明星', '?th/category/?category_id=108&page=1');
-    new_link('主播', '?th/category/?category_id=40&page=1');
-    new_link('美乳', '?th/category/?category_id=67&page=1');
-    new_link('口爆', '?th/category/?category_id=68&page=1');
-    new_link('解说', '?th/category/?category_id=105&page=1');
-    new_link('COS', '?th/category/?category_id=72&page=1');
+    new_link('S', '?th/index/search/?keyword=ol&page=1');
+    new_link('1', '?th/category/?category_id=1&page=1');
+    new_link('4', '?th/category/?category_id=4&page=1');
+    new_link('25', '?th/category/?category_id=25&page=1');
+    new_link('40', '?th/category/?category_id=40&page=1');
+    new_link('56', '?th/category/?category_id=56&page=1');
+    new_link('67', '?th/category/?category_id=67&page=1');
+    new_link('68', '?th/category/?category_id=68&page=1');
+    new_link('69', '?th/category/?category_id=69&page=1');
+    new_link('70', '?th/category/?category_id=70&page=1');
+    new_link('71', '?th/category/?category_id=71&page=1');
+    new_link('72', '?th/category/?category_id=72&page=1');
+    new_link('101', '?th/category/?category_id=101&page=1');
+    new_link('105', '?th/category/?category_id=105&page=1');
+    new_link('108', '?th/category/?category_id=108&page=1');
+    new_link('145', '?th/category/?category_id=145&page=1');
+
+    new_link('mm', '?mm/tags/中文字幕/1');
 }
 
 function delete_head_body() {
@@ -160,7 +181,7 @@ function delete_head_body() {
 
 function lozad_observer() {
     const observer = lozad('.lozad',{ load: function load(element) {
-        function decode(data, key = '0x88') {
+        function decode_xor(data, key = 0x88) {
             let binary = '';
             let bytes = new Uint8Array(data);
             for (let i = 0; i < bytes.byteLength; i++) {
@@ -169,8 +190,16 @@ function lozad_observer() {
             return 'data:image/jpeg;base64,' + window.btoa(binary);
         }
 
-        // 请求解码图片数据
-        function get_img_xor(addr, attr) {
+        function decode_sub(data, key = 17) {
+            let binary = '';
+            let bytes = new Uint8Array(data);
+            for (let i = key; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return 'data:image/jpeg;base64,' + window.btoa(binary);
+        }
+
+        function get_img_decode(addr, attr, decode) {
             let xhr = new XMLHttpRequest();
             xhr.open('GET', addr, true);
             xhr.responseType = 'arraybuffer';
@@ -192,7 +221,13 @@ function lozad_observer() {
         poster = element.getAttribute("data-poster-xor");
 
         if (poster) {
-            get_img_xor(poster, 'poster');
+            get_img_decode(poster, 'poster', decode_xor);
+        }
+
+        poster = element.getAttribute("data-poster-sub");
+
+        if (poster) {
+            get_img_decode(poster, 'poster', decode_sub);
         }
      }});
 
@@ -220,12 +255,12 @@ function add_video(txt, img, url, xor) {
     lozad_observer();
 }
 
-function add_pre_next(responseText, reg) {
+function add_pre_next(responseText, reg, pre=location.href.substring(0, g_pos) + (g_num - 1), next=location.href.substring(0, g_pos) + (g_num + 1)) {
     let ret;
 
     let a = document.createElement("a");
     a.innerText = '<';
-    a.href = location.href.substring(0, g_pos) + (g_num - 1);
+    a.href = pre;
     document.body.appendChild(a);
 
     if ((ret = reg.exec(responseText)) !== null) {
@@ -236,12 +271,11 @@ function add_pre_next(responseText, reg) {
 
     a = document.createElement("a");
     a.innerText = '>';
-    a.href = location.href.substring(0, g_pos) + (g_num + 1);
+    a.href = next;
     document.body.appendChild(a);
 }
 
 function add_m3u8_page(addr) {
-    // https://v88avnetwork.github.io/88av.html?m3u8/https://al1.fwlay.com/20231208/KlewcWeF/2000kb/hls/index.m3u8
     let video = document.createElement('video');
     video.id = addr;
     video.onclick = play_m3u8;
@@ -255,12 +289,6 @@ function callback_88_page(responseText, param, finalUrl) {
     let txt = [];
     let img = [];
     let url = [];
-
-    if (finalUrl)
-    {
-        get_domain1_callback(null, [ 0, new Date().toLocaleDateString() ], finalUrl);
-        return;
-    }
 
     add_pre_next(responseText, /data-total-page=\"([0-9]+)\"/);
 
@@ -292,7 +320,7 @@ function callback_th_page(responseText, param, finalUrl) {
         return;
     }
 
-    add_pre_next(responseText, /"last_page_p">([0-9\/]+)/);
+    add_pre_next(responseText, /"last_page":([0-9]+)/);
 
     for (let i = 0, reg = /data-sl="https?:\/\/[^\/]+\/([^\/]+)\/([^"]+)".*?data-src="([^"]+)".*?"rank-title">([^<]+)</g; (ret = reg.exec(responseText)) !== null; i++) {
         url[i] = ((parseInt(ret[1]) >= 20231108) ? 'https://al1.fwlay.com/' : 'https://yp1.fwlay.com/') + ret[1] + '/' + ret[2];
@@ -306,30 +334,41 @@ function callback_th_page(responseText, param, finalUrl) {
 
     add_video(txt, img, url, '-xor');
 
-    add_pre_next(responseText, /"last_page_p">([0-9\/]+)/);
+    add_pre_next(responseText, /"last_page":([0-9]+)/);
 }
 
-function get_addr_pos_num()
-{
+function callback_mm_page(responseText, param, finalUrl) {
+    let reg;
     let ret;
+    let txt = [];
+    let img = [];
+    let url = [];
 
-    if ((ret = /\?([^\/]+)\/(.*)/.exec(location.href)) !== null) {
-        g_addr[0] = ret[1];
-        g_addr[1] = ret[2];
-        console.log('addr:' + g_addr);
+    add_pre_next(responseText, />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/);
+
+    for (let i = 0, reg = /data-original="(https:\/\/[^\/]+\/+(\w+)\/(\w+)\/(\w+)\/([0-9a-z]+))\/cover\/cover_encry\.pip[\s\S]*?<h3>([^<]+)</g; (ret = reg.exec(responseText)) !== null; i++) {
+        img[i] = ret[1] + '/cover/cover_encry.pip';
+        url[i] = 'https://zl-365play.as8k.live:8090//' + ret[2] + '/' + ret[3] + '/' + ret[4] + '/' + ret[5] + '/m3u8/maomi365.m3u8';
+
+        for (var j = 0, code = ret[6].match(/&#(\d+);/g); j < code.length; j++) {
+          txt[i] += String.fromCharCode(code[j].replace(/[&#;]/g, ''));
+        }
     }
 
-    if ((ret = /([0-9]+)$/.exec(location.href)) !== null) {
-        g_pos = ret.index;
-        g_num = parseInt(ret[1]);
-        console.log('pos:' + g_pos + ' num:' + g_num);
-    }
+    console.log('url count:' + url.length);
+    console.log('txt count:' + txt.length);
+    console.log('img count:' + img.length);
+
+    add_video(txt, img, url, '-sub');
+
+    add_pre_next(responseText, />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/);
 }
 
 function main() {
     get_addr_pos_num();
     get_last_domain(0, get_domain0);
     get_last_domain(1, get_domain1);
+    get_last_domain(2, get_domain2);
     delete_head_body();
     add_link();
 
@@ -348,6 +387,11 @@ function main() {
         case 'th':
         {
             get_data(g_domain[1] + g_addr[1], callback_th_page, g_num);
+            break;
+        }
+        case 'mm':
+        {
+            get_data(g_domain[2] + g_addr[1] + '.html', callback_mm_page, g_num);
             break;
         }
         default:
