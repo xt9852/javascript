@@ -8,8 +8,8 @@
 // @connect      88a2290.cc
 // @connect      tai99.net
 // @connect      t90639.com
-// @connect      t90827.xyz
-// @connect      yp1.fwlay.com
+// @connect      t90560.xyz
+// @connect      t90957.xyz
 // @connect      mm231.vip
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -37,7 +37,7 @@ function play_m3u8() {
     g_video.controls = true;
     g_video.style.cursor = "default";
 
-    g_hls = new Hls({ id : this.id, startPosition: 100 });
+    g_hls = new Hls({ id : this.id });
     g_hls.attachMedia(this);
     g_hls.loadSource(this.id);
 
@@ -51,10 +51,9 @@ function get_data(url, callback, param) {
       method: 'GET',
       url: url,
       headers: {
-          'test': 'test',
           'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
       },
-      timeout: 2000,
+      timeout: 5000,
       ontimeout(xhr) {
           console.log('timeout: ' + url);
       },
@@ -94,6 +93,8 @@ function get_domain1_callback(responseText, param, finalUrl) {
         let reg = /href="([^"]+)"/g;
         let addr = reg.exec(responseText);
         g_domain[id] = addr[1];
+
+        get_data(addr[1], get_domain1_callback, param)
     }
 
     GM_setValue('date' + id, now);
@@ -133,11 +134,31 @@ function get_addr_pos_num() {
 }
 
 function new_link(name, addr) {
-    let a = document.createElement("a");
+    let a = document.createElement('a');
     a.style='margin-left:10';
     a.href= document.location.origin + document.location.pathname + addr;
     a.innerText = name;
     document.body.appendChild(a);
+}
+
+function add_th_link(name, id) {
+    let title = '';
+
+    for (var j = 0, code = name.match(/&#(\d+);/g); j < code.length; j++) {
+        title += String.fromCharCode(code[j].replace(/[&#;]/g, ''));
+    }
+
+    new_link(title, '?th/category/?category_id=' + id + '&page=1');
+}
+
+function add_mm_link(name) {
+    let title = '';
+
+    for (var j = 0, code = name.match(/&#(\d+);/g); j < code.length; j++) {
+        title += String.fromCharCode(code[j].replace(/[&#;]/g, ''));
+    }
+
+    new_link(title, '?mm/tags/' + title + '/1');
 }
 
 function add_link() {
@@ -145,32 +166,67 @@ function add_link() {
 
     new_link('m3u8', '?m3u8/');
 
+    document.body.appendChild(document.createElement('br'));
+
     new_link('/', '?88/');
+    new_link('S', '?88/search/ca/1');
     new_link('9', '?88/categories/91/1');
     new_link('L', '?88/video/latest/1');
     new_link('J', '?88/jav/1');
     new_link('E', '?88/oumei/1');
-    new_link('S', '?88/search/ca/1');
+
+    document.body.appendChild(document.createElement('br'));
 
     new_link('/', '?th/');
     new_link('S', '?th/index/search/?keyword=ol&page=1');
-    new_link('1', '?th/category/?category_id=1&page=1');
-    new_link('4', '?th/category/?category_id=4&page=1');
-    new_link('25', '?th/category/?category_id=25&page=1');
-    new_link('40', '?th/category/?category_id=40&page=1');
-    new_link('56', '?th/category/?category_id=56&page=1');
-    new_link('67', '?th/category/?category_id=67&page=1');
-    new_link('68', '?th/category/?category_id=68&page=1');
-    new_link('69', '?th/category/?category_id=69&page=1');
-    new_link('70', '?th/category/?category_id=70&page=1');
-    new_link('71', '?th/category/?category_id=71&page=1');
-    new_link('72', '?th/category/?category_id=72&page=1');
-    new_link('101', '?th/category/?category_id=101&page=1');
-    new_link('105', '?th/category/?category_id=105&page=1');
-    new_link('108', '?th/category/?category_id=108&page=1');
-    new_link('145', '?th/category/?category_id=145&page=1');
+    add_th_link('&#21507;&#29916;', 101);
+    add_th_link('&#22269;&#20135;', 1);
+    add_th_link('&#26085;&#38889;', 4);
+    add_th_link('&#27431;&#32654;', 25);
+    add_th_link('&#21160;&#28459;', 145);
+    add_th_link('&#20081;&#20262;', 69);
+    add_th_link('&#33258;&#25293;', 56);
+    add_th_link('&#35843;&#25945;', 71);
+    add_th_link('&#33821;&#33673;', 70);
+    add_th_link('&#25442;&#33080;', 108);
+    add_th_link('&#20027;&#25773;', 40);
+    add_th_link('&#32654;&#20083;', 67);
+    add_th_link('&#21475;&#29190;', 68);
+    add_th_link('&#35299;&#35828;', 105);
+    add_th_link('&#67;&#79;&#83;', 72);
 
-    new_link('mm', '?mm/tags/中文字幕/1');
+    document.body.appendChild(document.createElement('br'));
+
+    new_link('/', '?mm/');
+    add_mm_link('&#22269;&#20135;');
+    add_mm_link('&#20013;&#25991;&#23383;&#24149;');
+    add_mm_link('&#39640;&#28165;&#26080;&#30721;');
+    add_mm_link('&#26368;&#26032;&#40657;&#26009;');
+    add_mm_link('&#33258;&#25293;&#35270;&#39057;');
+    add_mm_link('&#31934;&#21697;&#20998;&#20139;');
+    add_mm_link('&#22825;&#32654;&#20256;&#23186;');
+    add_mm_link('&#21046;&#26381;&#35825;&#24785;');
+    add_mm_link('&#24378;&#22904;&#36855;&#22904;');
+    add_mm_link('&#32463;&#20856;&#19977;&#32423;');
+    add_mm_link('&#24320;&#25918;&#38738;&#24180;');
+    add_mm_link('&#23478;&#24237;&#20081;&#20262;');
+    add_mm_link('&#26497;&#21697;&#22899;&#31070;');
+    add_mm_link('&#22269;&#20135;&#31934;&#36873;');
+    add_mm_link('&#35843;&#25945;&#34384;&#24453;');
+    add_mm_link('&#21475;&#20132;&#28145;&#21897;');
+    add_mm_link('&#24773;&#36259;&#19997;&#34972;');
+    add_mm_link('&#33258;&#25293;&#20599;&#25293;');
+    add_mm_link('&#21160;&#28459;&#21345;&#36890;');
+    add_mm_link('&#39640;&#28165;&#26080;&#30721;');
+    add_mm_link('&#29087;&#22899;&#20154;&#22971;');
+    add_mm_link('&#32654;&#39068;&#24040;&#20083;');
+    add_mm_link('&#19997;&#34972;&#21046;&#26381;');
+    add_mm_link('&#20013;&#25991;&#26377;&#30721;');
+    add_mm_link('&#27431;&#32654;&#31995;&#21015;');
+    add_mm_link('&#00083;&#00077;&#31995;&#21015;');
+    add_mm_link('&#00065;&#00073;&#25442;&#33080;');
+
+    document.body.appendChild(document.createElement('br'));
 }
 
 function delete_head_body() {
@@ -323,7 +379,7 @@ function callback_th_page(responseText, param, finalUrl) {
     add_pre_next(responseText, /"last_page":([0-9]+)/);
 
     for (let i = 0, reg = /data-sl="https?:\/\/[^\/]+\/([^\/]+)\/([^"]+)".*?data-src="([^"]+)".*?"rank-title">([^<]+)</g; (ret = reg.exec(responseText)) !== null; i++) {
-        url[i] = ((parseInt(ret[1]) >= 20231108) ? 'https://al1.fwlay.com/' : 'https://yp1.fwlay.com/') + ret[1] + '/' + ret[2];
+        url[i] = ((parseInt(ret[1]) >= 20231108) ? 'https://al1.zabveq.com/' : 'https://yp1.zabveq.com/') + ret[1] + '/' + ret[2];
         img[i] = ret[3];
         txt[i] = ret[4];
     }
@@ -365,6 +421,9 @@ function callback_mm_page(responseText, param, finalUrl) {
 }
 
 function main() {
+    //GM_deleteValue('date0');
+    //GM_deleteValue('date1');
+    //GM_deleteValue('date2');
     get_addr_pos_num();
     get_last_domain(0, get_domain0);
     get_last_domain(1, get_domain1);
