@@ -5,15 +5,15 @@
 // @match        https://v88avnetwork.github.io/88av.html*
 // @require      https://cdn.jsdelivr.net/npm/hls.js
 // @require      https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js
-// @connect      88a2290.cc
+// @connect      88a1882.cc
 // @connect      tai99.net
 // @connect      t90639.com
-// @connect      t90560.xyz
-// @connect      t90957.xyz
+// @connect      t90167.xyz
 // @connect      mm231.vip
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
+// @grant        GM_listValues
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -46,16 +46,18 @@ function play_m3u8() {
     });
 }
 
-function get_data(url, callback, param) {
+function get_data(url, callback, param, timeout=console.log('timeout: ' + url)) {
+    console.log('get_data: ' + url);
+
     GM_xmlhttpRequest({
       method: 'GET',
       url: url,
       headers: {
           'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
       },
-      timeout: 5000,
+      timeout: 3000,
       ontimeout(xhr) {
-          console.log('timeout: ' + url);
+          timeout(url, param);
       },
       onload(xhr) {
           if (200 != xhr.status) {
@@ -68,56 +70,106 @@ function get_data(url, callback, param) {
           callback(xhr.responseText, param, (xhr.finalUrl != url) ? xhr.finalUrl : null);
       }
     });
-    console.log(url);
 }
 
-function get_domain0(id, now) {
-    g_domain[id] = document.getElementsByTagName('a')[3].href;
-    GM_setValue('date' + id, now);
-    GM_setValue('domain' + id, g_domain[id]);
-    console.log('set g_domain[' + id + ']: ' + g_domain[id]);
-}
-
-function get_domain1(id, now) {
-    get_data('http://tai99.net/', get_domain1_callback, [ id, now ])
-}
-
-function get_domain1_callback(responseText, param, finalUrl) {
+function domain_ok_callback(responseText, param, finalUrl) {
     let id = param[0];
-    let now = param[1];
+    let domain = param[1];
+    let addr = param[2];
+    let now = param[3];
 
-    if (finalUrl) {
+    g_domain[id] = domain;
+
+    GM_setValue('date[' + id + ']', now);
+    GM_setValue('domain[' + id + ']', g_domain[id]);
+
+    console.log('domain_ok_callback-----------------');
+    console.log('set date[' + id + ']: ' + now);
+    console.log('set domain[' + id + ']: ' + g_domain[id]);
+}
+
+function domain_88_timeout(url, param) {
+    let id = param[0];
+    let domain = param[1];
+    let addr = param[2];
+    let now = param[3];
+
+    console.log('domain_88_timeout:' + url);
+
+    get_data(addr, domain_88_callback, param, domain_88_timeout);
+}
+
+function domain_88_callback(responseText, param, finalUrl) {
+    let id = param[0];
+    let domain = param[1];
+    let addr = param[2];
+    let now = param[3];
+    let reg = /href="([^"]+)"/;
+    let ret = reg.exec(responseText);
+
+    g_domain[id] = ret[1];
+
+    GM_setValue('date[' + id + ']', now);
+    GM_setValue('domain[' + id + ']', g_domain[id]);
+
+    console.log('domain_88_callback-----------------');
+    console.log('set date[' + id + ']: ' + now);
+    console.log('set domain[' + id + ']: ' + g_domain[id]);
+}
+
+function domain_99_timeout(url, param) {
+    let id = param[0];
+    let domain = param[1];
+    let addr = param[2];
+    let now = param[3];
+
+    console.log('domain_99_timeout:' + url);
+
+    get_data(addr, domain_99_callback, param, domain_99_timeout); // first
+}
+
+function domain_99_callback(responseText, param, finalUrl) {
+    let id = param[0];
+    let domain = param[1];
+    let addr = param[2];
+    let now = param[3];
+    let reg = /href="([^"]+)"/;
+    let ret = reg.exec(responseText);
+
+    console.log('domain_99_callback-----------------');
+
+    if (!finalUrl) {
+        get_data(ret[1], domain_99_callback, param, domain_99_timeout); // second
+    } else {
         let pos = finalUrl.lastIndexOf('?');
         g_domain[id] = (pos < 0) ? finalUrl : finalUrl.substring(0, pos);
-    } else {
-        let reg = /href="([^"]+)"/g;
-        let addr = reg.exec(responseText);
-        g_domain[id] = addr[1];
 
-        get_data(addr[1], get_domain1_callback, param)
+        GM_setValue('date[' + id + ']', now);
+        GM_setValue('domain[' + id + ']', g_domain[id]);
+
+        console.log('set date[' + id + ']: ' + now);
+        console.log('set domain[' + id + ']: ' + g_domain[id]);
     }
-
-    GM_setValue('date' + id, now);
-    GM_setValue('domain' + id, g_domain[id]);
-    console.log('set g_domain[' + id + ']: ' + g_domain[id]);
 }
 
-function get_domain2(id, now) {
-    g_domain[id] = 'https://mm231.vip/';
-    GM_setValue('date' + id, now);
-    GM_setValue('domain' + id, g_domain[id]);
-    console.log('set g_domain[' + id + ']: ' + g_domain[id]);
+function domain_mm_timeout(url, param) {
+    let id = param[0];
+    let domain = param[1];
+    let addr = param[2];
+    let now = param[3];
+
+    console.log('domain_mm_timeout:' + url);
 }
 
-function get_last_domain(id, get_domain) {
+function get_last_domain(get_timtout, id, default_value, addr) {
     let now = new Date().toLocaleDateString();
-    let date = GM_getValue('date' + id, '');
+    let date = GM_getValue('date[' + id + ']');
 
-    if (date == now) {
-        g_domain[id] = GM_getValue('domain' + id, '');
-        console.log('g_domain[' + id + ']: ' + g_domain[id]);
-    } else {
-        get_domain(id, now);
+    g_domain[id] = GM_getValue('domain[' + id + ']', default_value);
+    console.log('g_domain[' + id + ']: ' + g_domain[id]);
+
+    if (date != now) {
+        get_data(g_domain[id], domain_ok_callback, [ id, g_domain[id], addr, now ], get_timtout);
     }
 }
 
@@ -141,14 +193,14 @@ function new_link(name, addr) {
     document.body.appendChild(a);
 }
 
-function add_th_link(name, id) {
+function add_99_link(name, id) {
     let title = '';
 
     for (var j = 0, code = name.match(/&#(\d+);/g); j < code.length; j++) {
         title += String.fromCharCode(code[j].replace(/[&#;]/g, ''));
     }
 
-    new_link(title, '?th/category/?category_id=' + id + '&page=1');
+    new_link(title, '?99/category/?category_id=' + id + '&page=1');
 }
 
 function add_mm_link(name) {
@@ -177,23 +229,23 @@ function add_link() {
 
     document.body.appendChild(document.createElement('br'));
 
-    new_link('/', '?th/');
-    new_link('S', '?th/index/search/?keyword=ol&page=1');
-    add_th_link('&#21507;&#29916;', 101);
-    add_th_link('&#22269;&#20135;', 1);
-    add_th_link('&#26085;&#38889;', 4);
-    add_th_link('&#27431;&#32654;', 25);
-    add_th_link('&#21160;&#28459;', 145);
-    add_th_link('&#20081;&#20262;', 69);
-    add_th_link('&#33258;&#25293;', 56);
-    add_th_link('&#35843;&#25945;', 71);
-    add_th_link('&#33821;&#33673;', 70);
-    add_th_link('&#25442;&#33080;', 108);
-    add_th_link('&#20027;&#25773;', 40);
-    add_th_link('&#32654;&#20083;', 67);
-    add_th_link('&#21475;&#29190;', 68);
-    add_th_link('&#35299;&#35828;', 105);
-    add_th_link('&#67;&#79;&#83;', 72);
+    new_link('/', '?99/');
+    new_link('S', '?99/index/search/?keyword=ol&page=1');
+    add_99_link('&#21507;&#29916;', 101);
+    add_99_link('&#22269;&#20135;', 1);
+    add_99_link('&#26085;&#38889;', 4);
+    add_99_link('&#27431;&#32654;', 25);
+    add_99_link('&#21160;&#28459;', 145);
+    add_99_link('&#20081;&#20262;', 69);
+    add_99_link('&#33258;&#25293;', 56);
+    add_99_link('&#35843;&#25945;', 71);
+    add_99_link('&#33821;&#33673;', 70);
+    add_99_link('&#25442;&#33080;', 108);
+    add_99_link('&#20027;&#25773;', 40);
+    add_99_link('&#32654;&#20083;', 67);
+    add_99_link('&#21475;&#29190;', 68);
+    add_99_link('&#35299;&#35828;', 105);
+    add_99_link('&#67;&#79;&#83;', 72);
 
     document.body.appendChild(document.createElement('br'));
 
@@ -229,13 +281,13 @@ function add_link() {
     document.body.appendChild(document.createElement('br'));
 }
 
-function delete_head_body() {
+function del_head_body() {
     document.body = document.createElement('body');
     var head = document.querySelector('head');
     head.parentNode.removeChild(head);
 }
 
-function lozad_observer() {
+function run_lozad_observer() {
     const observer = lozad('.lozad',{ load: function load(element) {
         function decode_xor(data, key = 0x88) {
             let binary = '';
@@ -308,10 +360,10 @@ function add_video(txt, img, url, xor) {
         document.body.appendChild(video);
     }
 
-    lozad_observer();
+    run_lozad_observer();
 }
 
-function add_pre_next(responseText, reg, pre=location.href.substring(0, g_pos) + (g_num - 1), next=location.href.substring(0, g_pos) + (g_num + 1)) {
+function add_pre_next_button(responseText, reg, pre=location.href.substring(0, g_pos) + (g_num - 1), next=location.href.substring(0, g_pos) + (g_num + 1)) {
     let ret;
 
     let a = document.createElement("a");
@@ -346,7 +398,7 @@ function callback_88_page(responseText, param, finalUrl) {
     let img = [];
     let url = [];
 
-    add_pre_next(responseText, /data-total-page=\"([0-9]+)\"/);
+    add_pre_next_button(responseText, /data-total-page=\"([0-9]+)\"/);
 
     for (let i = 0, reg = /<img alt="([^"]+)"[\s\S]+?\/\/([^\/]+)\/videos\/([^\/]+)\//g; (ret = reg.exec(responseText)) !== null; i++) {
         txt[i] = ret[1];
@@ -360,23 +412,17 @@ function callback_88_page(responseText, param, finalUrl) {
 
     add_video(txt, img, url, '');
 
-    add_pre_next(responseText, /data-total-page=\"([0-9]+)\"/);
+    add_pre_next_button(responseText, /data-total-page=\"([0-9]+)\"/);
 }
 
-function callback_th_page(responseText, param, finalUrl) {
+function callback_99_page(responseText, param, finalUrl) {
     let reg;
     let ret;
     let txt = [];
     let img = [];
     let url = [];
 
-    if (finalUrl)
-    {
-        get_domain1_callback(null, [ 1, new Date().toLocaleDateString() ], finalUrl);
-        return;
-    }
-
-    add_pre_next(responseText, /"last_page":([0-9]+)/);
+    add_pre_next_button(responseText, /"last_page":([0-9]+)/);
 
     for (let i = 0, reg = /data-sl="https?:\/\/[^\/]+\/([^\/]+)\/([^"]+)".*?data-src="([^"]+)".*?"rank-title">([^<]+)</g; (ret = reg.exec(responseText)) !== null; i++) {
         url[i] = ((parseInt(ret[1]) >= 20231108) ? 'https://al1.zabveq.com/' : 'https://yp1.zabveq.com/') + ret[1] + '/' + ret[2];
@@ -390,7 +436,7 @@ function callback_th_page(responseText, param, finalUrl) {
 
     add_video(txt, img, url, '-xor');
 
-    add_pre_next(responseText, /"last_page":([0-9]+)/);
+    add_pre_next_button(responseText, /"last_page":([0-9]+)/);
 }
 
 function callback_mm_page(responseText, param, finalUrl) {
@@ -400,7 +446,7 @@ function callback_mm_page(responseText, param, finalUrl) {
     let img = [];
     let url = [];
 
-    add_pre_next(responseText, />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/);
+    add_pre_next_button(responseText, />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/);
 
     for (let i = 0, reg = /data-original="(https:\/\/[^\/]+\/+(\w+)\/(\w+)\/(\w+)\/([0-9a-z]+))\/cover\/cover_encry\.pip[\s\S]*?<h3>([^<]+)</g; (ret = reg.exec(responseText)) !== null; i++) {
         img[i] = ret[1] + '/cover/cover_encry.pip';
@@ -417,18 +463,25 @@ function callback_mm_page(responseText, param, finalUrl) {
 
     add_video(txt, img, url, '-sub');
 
-    add_pre_next(responseText, />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/);
+    add_pre_next_button(responseText, />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/);
 }
 
 function main() {
-    //GM_deleteValue('date0');
-    //GM_deleteValue('date1');
-    //GM_deleteValue('date2');
+/*
+    GM_deleteValue("date[88]");
+    GM_deleteValue("domain[88]");
+    GM_deleteValue("date[99]");
+    GM_deleteValue("domain[99]");
+    GM_deleteValue("date[mm]");
+    GM_deleteValue("domain[mm]");
+    console.log(GM_listValues());
+*/
+    get_last_domain(domain_88_timeout, '88', 'https://88a1882.cc/', 'https://v88avnetwork.github.io/88av.html');
+    get_last_domain(domain_99_timeout, '99', 'https://t90167.xyz:9388/', 'http://tai99.net/');
+    get_last_domain(domain_mm_timeout, 'mm', 'https://mm231.vip/', '');
+
     get_addr_pos_num();
-    get_last_domain(0, get_domain0);
-    get_last_domain(1, get_domain1);
-    get_last_domain(2, get_domain2);
-    delete_head_body();
+    del_head_body();
     add_link();
 
     switch (g_addr[0])
@@ -440,17 +493,17 @@ function main() {
         }
         case '88':
         {
-            get_data(g_domain[0] + g_addr[1], callback_88_page, g_num);
+            get_data(g_domain['88'] + g_addr[1], callback_88_page, g_num);
             break;
         }
-        case 'th':
+        case '99':
         {
-            get_data(g_domain[1] + g_addr[1], callback_th_page, g_num);
+            get_data(g_domain['99'] + g_addr[1], callback_99_page, g_num);
             break;
         }
         case 'mm':
         {
-            get_data(g_domain[2] + g_addr[1] + '.html', callback_mm_page, g_num);
+            get_data(g_domain['mm'] + g_addr[1] + '.html', callback_mm_page, g_num);
             break;
         }
         default:
