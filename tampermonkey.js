@@ -5,10 +5,12 @@
 // @match        https://v88avnetwork.github.io/88av.html*
 // @require      https://cdn.jsdelivr.net/npm/hls.js
 // @require      https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js
+// @connect      github.com
 // @connect      88a1882.cc
 // @connect      tai99.net
 // @connect      t90639.com
-// @connect      t90167.xyz
+// @connect      t90606.xyz
+// @connect      mm197.vip
 // @connect      mm231.vip
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -46,130 +48,81 @@ function play_m3u8() {
     });
 }
 
-function get_data(url, callback, param, timeout=console.log('timeout: ' + url)) {
-    console.log('get_data: ' + url);
+function get_data(url, callback, param, timeout) {
+    //console.log('get_data: ' + url);
 
     GM_xmlhttpRequest({
-      method: 'GET',
-      url: url,
-      headers: {
-          'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
-      },
-      timeout: 3000,
-      ontimeout(xhr) {
-          timeout(url, param);
-      },
-      onload(xhr) {
-          if (200 != xhr.status) {
-              let div = document.createElement("div");
-              div.innerText = 'get_data: ' + url + ' status:' + xhr.status;
-              document.body.appendChild(div);
-              return;
-          }
-
-          callback(xhr.responseText, param, (xhr.finalUrl != url) ? xhr.finalUrl : null);
-      }
+        url : url,
+        timeout : 5000,
+        headers : {
+            'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
+        },
+        onload(xhr) {
+            callback(url, xhr, param);
+        },
+        ontimeout(xhr) {
+            timeout ? timeout(url, xhr, param) : console.log('get_data timeout:' + url);
+        }
     });
 }
 
-function domain_ok_callback(responseText, param, finalUrl) {
+function domain_timeout(url, xhr, param) {
+    let responseText = xhr.responseText;
+    let finalUrl = xhr.finalUrl;
     let id = param[0];
     let domain = param[1];
     let addr = param[2];
     let now = param[3];
+    let reg = param[4];
+    let first = param[5];
 
-    g_domain[id] = domain;
+    console.log('domain_timeout[' + id + ']:' + url);
+    console.log('domain_timeout[' + id + ']:' + addr);
 
-    GM_setValue('date[' + id + ']', now);
-    GM_setValue('domain[' + id + ']', g_domain[id]);
+    param[5] = false;
 
-    console.log('domain_ok_callback-----------------');
-    console.log('set date[' + id + ']: ' + now);
-    console.log('set domain[' + id + ']: ' + g_domain[id]);
+    get_data(addr, domain_callback, param, domain_timeout);
 }
 
-function domain_88_timeout(url, param) {
+function domain_callback(url, xhr, param) {
+    let responseText = xhr.responseText;
+    let finalUrl = xhr.finalUrl;
     let id = param[0];
     let domain = param[1];
     let addr = param[2];
     let now = param[3];
+    let reg = param[4];
+    let first = param[5];
 
-    console.log('domain_88_timeout:' + url);
-
-    get_data(addr, domain_88_callback, param, domain_88_timeout);
-}
-
-function domain_88_callback(responseText, param, finalUrl) {
-    let id = param[0];
-    let domain = param[1];
-    let addr = param[2];
-    let now = param[3];
-    let reg = /href="([^"]+)"/;
-    let ret = reg.exec(responseText);
-
-    g_domain[id] = ret[1];
-
-    GM_setValue('date[' + id + ']', now);
-    GM_setValue('domain[' + id + ']', g_domain[id]);
-
-    console.log('domain_88_callback-----------------');
-    console.log('set date[' + id + ']: ' + now);
-    console.log('set domain[' + id + ']: ' + g_domain[id]);
-}
-
-function domain_99_timeout(url, param) {
-    let id = param[0];
-    let domain = param[1];
-    let addr = param[2];
-    let now = param[3];
-
-    console.log('domain_99_timeout:' + url);
-
-    get_data(addr, domain_99_callback, param, domain_99_timeout); // first
-}
-
-function domain_99_callback(responseText, param, finalUrl) {
-    let id = param[0];
-    let domain = param[1];
-    let addr = param[2];
-    let now = param[3];
-    let reg = /href="([^"]+)"/;
-    let ret = reg.exec(responseText);
-
-    console.log('domain_99_callback-----------------');
-
-    if (!finalUrl) {
-        get_data(ret[1], domain_99_callback, param, domain_99_timeout); // second
-    } else {
+    if (url != finalUrl) {
+        console.log('domain_callback----finalUrl:' + finalUrl);
         let pos = finalUrl.lastIndexOf('?');
         g_domain[id] = (pos < 0) ? finalUrl : finalUrl.substring(0, pos);
-
-        GM_setValue('date[' + id + ']', now);
-        GM_setValue('domain[' + id + ']', g_domain[id]);
-
-        console.log('set date[' + id + ']: ' + now);
-        console.log('set domain[' + id + ']: ' + g_domain[id]);
+    } else if (first) {
+        g_domain[id] = domain;
+    } else {
+        let ret = reg.exec(responseText);
+        g_domain[id] = (id != 'mm') ? ret[1] : 'https://mm' + ret[1] + '.vip/';
     }
+
+    GM_setValue('date[' + id + ']', now);
+    GM_setValue('domain[' + id + ']', g_domain[id]);
+
+    console.log('domain_callback----set date[' + id + ']: ' + now);
+    console.log('domain_callback----set domain[' + id + ']: ' + g_domain[id]);
 }
 
-function domain_mm_timeout(url, param) {
-    let id = param[0];
-    let domain = param[1];
-    let addr = param[2];
-    let now = param[3];
-
-    console.log('domain_mm_timeout:' + url);
-}
-
-function get_last_domain(get_timtout, id, default_value, addr) {
+function get_last_domain(id, addr, value, reg) {
     let now = new Date().toLocaleDateString();
     let date = GM_getValue('date[' + id + ']');
 
-    g_domain[id] = GM_getValue('domain[' + id + ']', default_value);
+    g_domain[id] = GM_getValue('domain[' + id + ']', value);
+
     console.log('g_domain[' + id + ']: ' + g_domain[id]);
 
     if (date != now) {
-        get_data(g_domain[id], domain_ok_callback, [ id, g_domain[id], addr, now ], get_timtout);
+        let param = [ id, g_domain[id], addr, now, reg, true ];
+        get_data(g_domain[id], domain_callback, param, domain_timeout);
     }
 }
 
@@ -391,94 +344,93 @@ function add_m3u8_page(addr) {
     document.body.appendChild(video);
 }
 
-function callback_88_page(responseText, param, finalUrl) {
+function callback_88_page(url, xhr, param) {
+    let responseText = xhr.responseText;
     let reg;
     let ret;
     let txt = [];
     let img = [];
-    let url = [];
+    let m3u = [];
 
     add_pre_next_button(responseText, /data-total-page=\"([0-9]+)\"/);
 
     for (let i = 0, reg = /<img alt="([^"]+)"[\s\S]+?\/\/([^\/]+)\/videos\/([^\/]+)\//g; (ret = reg.exec(responseText)) !== null; i++) {
         txt[i] = ret[1];
         img[i] = 'https://' + ret[2] + '/videos/' + ret[3] + '/cover/5_505_259.webp';
-        url[i] = 'https://7.bbdata.cc/videos/' + ret[3] + '/g.m3u8?h=f750032c47747d8';
+        m3u[i] = 'https://qhshenghuo.xyz/videos/' + ret[3] + '/g.m3u8?h=d11925605f2a1ef';
     }
 
-    console.log('url count:' + url.length);
     console.log('txt count:' + txt.length);
     console.log('img count:' + img.length);
+    console.log('m3u count:' + m3u.length);
 
-    add_video(txt, img, url, '');
+    add_video(txt, img, m3u, '');
 
     add_pre_next_button(responseText, /data-total-page=\"([0-9]+)\"/);
 }
 
-function callback_99_page(responseText, param, finalUrl) {
+function callback_99_page(url, xhr, param) {
+    let responseText = xhr.responseText;
     let reg;
     let ret;
     let txt = [];
     let img = [];
-    let url = [];
+    let m3u = [];
 
     add_pre_next_button(responseText, /"last_page":([0-9]+)/);
 
     for (let i = 0, reg = /data-sl="https?:\/\/[^\/]+\/([^\/]+)\/([^"]+)".*?data-src="([^"]+)".*?"rank-title">([^<]+)</g; (ret = reg.exec(responseText)) !== null; i++) {
-        url[i] = ((parseInt(ret[1]) >= 20231108) ? 'https://al1.zabveq.com/' : 'https://yp1.zabveq.com/') + ret[1] + '/' + ret[2];
-        img[i] = ret[3];
         txt[i] = ret[4];
+        img[i] = ret[3];
+        m3u[i] = ((parseInt(ret[1]) >= 20231108) ? 'https://al1.zabveq.com/' : 'https://yp1.zabveq.com/') + ret[1] + '/' + ret[2];
     }
 
-    console.log('url count:' + url.length);
     console.log('txt count:' + txt.length);
     console.log('img count:' + img.length);
+    console.log('m3u count:' + m3u.length);
 
-    add_video(txt, img, url, '-xor');
+    add_video(txt, img, m3u, '-xor');
 
     add_pre_next_button(responseText, /"last_page":([0-9]+)/);
 }
 
-function callback_mm_page(responseText, param, finalUrl) {
+function callback_mm_page(url, xhr, param) {
+    let responseText = xhr.responseText;
     let reg;
     let ret;
     let txt = [];
     let img = [];
-    let url = [];
+    let m3u = [];
 
     add_pre_next_button(responseText, />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/);
 
     for (let i = 0, reg = /data-original="(https:\/\/[^\/]+\/+(\w+)\/(\w+)\/(\w+)\/([0-9a-z]+))\/cover\/cover_encry\.pip[\s\S]*?<h3>([^<]+)</g; (ret = reg.exec(responseText)) !== null; i++) {
+        for (var j = 0, code = ret[6].match(/&#(\d+);/g); j < code.length; j++) { txt[i] += String.fromCharCode(code[j].replace(/[&#;]/g, '')); }
         img[i] = ret[1] + '/cover/cover_encry.pip';
-        url[i] = 'https://zl-365play.as8k.live:8090//' + ret[2] + '/' + ret[3] + '/' + ret[4] + '/' + ret[5] + '/m3u8/maomi365.m3u8';
-
-        for (var j = 0, code = ret[6].match(/&#(\d+);/g); j < code.length; j++) {
-          txt[i] += String.fromCharCode(code[j].replace(/[&#;]/g, ''));
-        }
+        m3u[i] = 'https://zl-365play.as8k.live:8090//' + ret[2] + '/' + ret[3] + '/' + ret[4] + '/' + ret[5] + '/m3u8/maomi365.m3u8';
     }
 
-    console.log('url count:' + url.length);
     console.log('txt count:' + txt.length);
     console.log('img count:' + img.length);
+    console.log('m3u count:' + m3u.length);
 
-    add_video(txt, img, url, '-sub');
+    add_video(txt, img, m3u, '-sub');
 
     add_pre_next_button(responseText, />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/);
 }
 
 function main() {
-/*
-    GM_deleteValue("date[88]");
-    GM_deleteValue("domain[88]");
-    GM_deleteValue("date[99]");
-    GM_deleteValue("domain[99]");
-    GM_deleteValue("date[mm]");
-    GM_deleteValue("domain[mm]");
-    console.log(GM_listValues());
-*/
-    get_last_domain(domain_88_timeout, '88', 'https://88a1882.cc/', 'https://v88avnetwork.github.io/88av.html');
-    get_last_domain(domain_99_timeout, '99', 'https://t90167.xyz:9388/', 'http://tai99.net/');
-    get_last_domain(domain_mm_timeout, 'mm', 'https://mm231.vip/', '');
+    //GM_deleteValue("date[88]");
+    //GM_deleteValue("domain[88]");
+    //GM_deleteValue("date[99]");
+    //GM_deleteValue("domain[99]");
+    //GM_deleteValue("date[mm]");
+    //GM_deleteValue("domain[mm]");
+    //console.log(GM_listValues());
+
+    get_last_domain('88', 'https://v88avnetwork.github.io/88av.html', 'https://88a1882.cc/', /href="([^"]+)"/);
+    get_last_domain('99', 'http://tai99.net/', 'https://t90134.xyz:9388/', /href="([^"]+)"/);
+    get_last_domain('mm', 'https://github.com/maomimaomiav/maomi/blob/main/README.md', 'https://mm231.vip/', /"anchor":"️--最新地址--------mm(\d+)vip"/);
 
     get_addr_pos_num();
     del_head_body();
@@ -493,17 +445,17 @@ function main() {
         }
         case '88':
         {
-            get_data(g_domain['88'] + g_addr[1], callback_88_page, g_num);
+            get_data(g_domain['88'] + g_addr[1], callback_88_page);
             break;
         }
         case '99':
         {
-            get_data(g_domain['99'] + g_addr[1], callback_99_page, g_num);
+            get_data(g_domain['99'] + g_addr[1], callback_99_page);
             break;
         }
         case 'mm':
         {
-            get_data(g_domain['mm'] + g_addr[1] + '.html', callback_mm_page, g_num);
+            get_data(g_domain['mm'] + g_addr[1] + '.html', callback_mm_page);
             break;
         }
         default:
