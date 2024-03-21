@@ -5,16 +5,16 @@
 // @match        https://www.baidu.com/sugrec?*
 // @require      https://cdn.jsdelivr.net/npm/hls.js
 // @require      https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js
+// @connect      github.io
 // @connect      github.com
-// @connect      88a2352.cc
-// @connect      tai99.net
-// @connect      t90639.com
-// @connect      t90760.xyz
-// @connect      mm197.vip
+// @connect      obs-helf.cucloud.cn
+// @connect      17cxxx.com
+// @connect      88a2544.cc
+// @connect      mm307.vip
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @grant        GM_deleteValue
 // @grant        GM_listValues
+// @grant        GM_deleteValue
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -45,199 +45,6 @@ function play_m3u8() {
     g_hls.on(Hls.Events.MANIFEST_PARSED, function() {
         g_video.play();
     });
-}
-
-function get_data(url, callback, param, timeout) {
-    console.log('get_data: ' + url);
-
-    GM_xmlhttpRequest({
-        url : url,
-        timeout : 3000,
-        headers : {
-            'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
-        },
-        onload(xhr) {
-            callback(url, xhr, param);
-        },
-        onerror(xhr) {
-            console.log('get_data ' + url + ' error:' + xhr.error);
-        },
-        ontimeout(xhr) {
-            timeout ? timeout(url, xhr, param) : console.log('get_data ' + url + 'timeout');
-        },
-    });
-}
-
-function domain_timeout(url, xhr, param) {
-    let responseText = xhr.responseText;
-    let finalUrl = xhr.finalUrl;
-    let id = param[0];
-    let domain = param[1];
-    let addr = param[2];
-    let now = param[3];
-    let reg = param[4];
-    let first = param[5];
-
-    console.log('test timeout[' + id + ']:' + url);
-    console.log('get domain ' + addr);
-
-    param[5] = false;
-
-    get_data(addr, domain_callback, param, domain_timeout);
-}
-
-function domain_callback(url, xhr, param) {
-    let responseText = xhr.responseText;
-    let finalUrl = xhr.finalUrl;
-    let id = param[0];
-    let domain = param[1];
-    let addr = param[2];
-    let now = param[3];
-    let reg = param[4];
-    let first = param[5];
-
-    if (url != finalUrl) {
-        console.log('domain_callback----finalUrl:' + finalUrl);
-        let pos = finalUrl.lastIndexOf('?');
-        g_domain[id] = (pos < 0) ? finalUrl : finalUrl.substring(0, pos);
-    } else if (first) {
-        g_domain[id] = domain;
-    } else {
-        let ret = reg.exec(responseText);
-        g_domain[id] = (id != 'mm') ? ret[1] : 'https://mm' + ret[1] + '.vip/';
-    }
-
-    GM_setValue('date[' + id + ']', now);
-    GM_setValue('domain[' + id + ']', g_domain[id]);
-
-    console.log('domain_callback----set date[' + id + ']: ' + now);
-    console.log('domain_callback----set domain[' + id + ']: ' + g_domain[id]);
-}
-
-function get_last_domain(id, addr, value, reg) {
-    let now = new Date().toLocaleDateString();
-    let date = GM_getValue('date[' + id + ']');
-
-    g_domain[id] = GM_getValue('domain[' + id + ']', value);
-
-    console.log(id + ': ' + g_domain[id]);
-
-    if (date != now) {
-        console.log('test ' + g_domain[id]);
-        let param = [ id, g_domain[id], addr, now, reg, true ];
-        get_data(g_domain[id], domain_callback, param, domain_timeout);
-    }
-}
-
-function get_addr_pos_num() {
-    let ret;
-
-    if ((ret = /\?([^\/]+)\/(.*?)([0-9\-]*)$/.exec(location.href)) !== null) {
-        g_addr[0] = ret[1];
-        g_addr[1] = ret[2] + ret[3];
-        g_pos = ret.index + ret[1].length + ret[2].length + 2;
-        g_num = parseInt(ret[3]);
-        console.log('addr:' + g_addr[1]);
-        console.log('page:' + g_addr[0]);
-        console.log('pos:' + g_pos);
-        console.log('num:' + g_num);
-    }
-}
-
-function new_link(name, addr) {
-    let a = document.createElement('a');
-    a.style='margin-left:10';
-    a.href= document.location.origin + document.location.pathname + addr;
-    a.innerText = name;
-    document.body.appendChild(a);
-}
-
-function add_99_link(name, id) {
-    let title = '';
-
-    for (var j = 0, code = name.match(/&#(\d+);/g); j < code.length; j++) {
-        title += String.fromCharCode(code[j].replace(/[&#;]/g, ''));
-    }
-
-    new_link(title, '?99/category/?category_id=' + id + '&page=1');
-}
-
-function add_mm_link(name) {
-    let title = '';
-
-    for (var j = 0, code = name.match(/&#(\d+);/g); j < code.length; j++) {
-        title += String.fromCharCode(code[j].replace(/[&#;]/g, ''));
-    }
-
-    new_link(title, '?mm/tags/' + title + '/1');
-}
-
-function add_link() {
-    document.body = document.createElement('body');
-
-    new_link('m3u8', '?m3u8/');
-
-    document.body.appendChild(document.createElement('br'));
-
-    new_link('/', '?88/');
-    new_link('S', '?88/search/ca/1');
-    new_link('9', '?88/categories/91/1');
-    new_link('L', '?88/video/latest/1');
-    new_link('J', '?88/jav/1');
-    new_link('E', '?88/oumei/1');
-
-    document.body.appendChild(document.createElement('br'));
-
-    new_link('/', '?99/');
-    new_link('S', '?99/index/search/?keyword=ol&page=1');
-    add_99_link('&#21507;&#29916;', 101);
-    add_99_link('&#22269;&#20135;', 1);
-    add_99_link('&#26085;&#38889;', 4);
-    add_99_link('&#27431;&#32654;', 25);
-    add_99_link('&#21160;&#28459;', 145);
-    add_99_link('&#20081;&#20262;', 69);
-    add_99_link('&#33258;&#25293;', 56);
-    add_99_link('&#35843;&#25945;', 71);
-    add_99_link('&#33821;&#33673;', 70);
-    add_99_link('&#25442;&#33080;', 108);
-    add_99_link('&#20027;&#25773;', 40);
-    add_99_link('&#32654;&#20083;', 67);
-    add_99_link('&#21475;&#29190;', 68);
-    add_99_link('&#35299;&#35828;', 105);
-    add_99_link('&#67;&#79;&#83;', 72);
-
-    document.body.appendChild(document.createElement('br'));
-
-    new_link('/', '?mm/');
-    add_mm_link('&#22269;&#20135;');
-    add_mm_link('&#20013;&#25991;&#23383;&#24149;');
-    add_mm_link('&#39640;&#28165;&#26080;&#30721;');
-    add_mm_link('&#26368;&#26032;&#40657;&#26009;');
-    add_mm_link('&#33258;&#25293;&#35270;&#39057;');
-    add_mm_link('&#31934;&#21697;&#20998;&#20139;');
-    add_mm_link('&#22825;&#32654;&#20256;&#23186;');
-    add_mm_link('&#21046;&#26381;&#35825;&#24785;');
-    add_mm_link('&#24378;&#22904;&#36855;&#22904;');
-    add_mm_link('&#32463;&#20856;&#19977;&#32423;');
-    add_mm_link('&#24320;&#25918;&#38738;&#24180;');
-    add_mm_link('&#23478;&#24237;&#20081;&#20262;');
-    add_mm_link('&#26497;&#21697;&#22899;&#31070;');
-    add_mm_link('&#22269;&#20135;&#31934;&#36873;');
-    add_mm_link('&#35843;&#25945;&#34384;&#24453;');
-    add_mm_link('&#21475;&#20132;&#28145;&#21897;');
-    add_mm_link('&#24773;&#36259;&#19997;&#34972;');
-    add_mm_link('&#33258;&#25293;&#20599;&#25293;');
-    add_mm_link('&#21160;&#28459;&#21345;&#36890;');
-    add_mm_link('&#39640;&#28165;&#26080;&#30721;');
-    add_mm_link('&#29087;&#22899;&#20154;&#22971;');
-    add_mm_link('&#32654;&#39068;&#24040;&#20083;');
-    add_mm_link('&#19997;&#34972;&#21046;&#26381;');
-    add_mm_link('&#20013;&#25991;&#26377;&#30721;');
-    add_mm_link('&#27431;&#32654;&#31995;&#21015;');
-    add_mm_link('&#00083;&#00077;&#31995;&#21015;');
-    add_mm_link('&#00065;&#00073;&#25442;&#33080;');
-
-    document.body.appendChild(document.createElement('br'));
 }
 
 function run_lozad_observer() {
@@ -295,6 +102,155 @@ function run_lozad_observer() {
     observer.observe();
 }
 
+function get_unicode(str) {
+    let pos = 0;
+    let out = '';
+
+    for (let reg = /&#([\d\w]+);/g, ret; (ret = reg.exec(str)) !== null; ) {
+        if (ret.index > pos) {
+            out += str.substring(pos, ret.index);
+            pos = ret.index;
+        }
+
+        out += String.fromCharCode(ret[1]);
+        pos += ret[0].length;
+    }
+
+    if (pos < str.length) {
+        out += str.substring(pos, str.length);
+    }
+
+    return out;
+}
+
+function get_data(url, callback, param, timeout_cb) {
+    //console.log('url: ' + url);
+
+    GM_xmlhttpRequest({
+        url : url,
+        timeout : 5000,
+        headers : {
+            'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
+        },
+        onload(xhr) {
+            callback(url, xhr, param);
+        },
+        onerror(xhr) {
+            timeout_cb ? timeout_cb(url, xhr, param) : console.log('url: ' + url + ' error:' + xhr.error);
+        },
+        ontimeout(xhr) {
+            timeout_cb ? timeout_cb(url, xhr, param) : console.log('url: ' + url + 'timeout');
+        },
+    });
+}
+
+function domain_timeout(url, xhr, param) {
+    let responseText = xhr.responseText;
+    let finalUrl = xhr.finalUrl;
+    let id = param.id;
+    let domain = param.domain;
+    let addr = param.addr;
+    let date = param.date;
+    let callback = param.callback;
+    let times = param.times;
+
+    console.log('timeout url:' + url + ' times:' + param.times + ' error:', xhr);
+
+    if (param.times++ > 10) { return; }
+
+    get_data(url, domain_callback, param, domain_timeout);
+}
+
+function domain_callback(url, xhr, param) {
+    let responseText = xhr.responseText;
+    let finalUrl = xhr.finalUrl;
+    let id = param.id;
+    let domain = param.domain;
+    let addr = param.addr;
+    let date = param.date;
+    let callback = param.callback;
+    let times = param.times;
+
+    g_domain[id] = (times == 0) ? domain : callback(responseText);
+
+    let value = { date : date, domain : g_domain[id] };
+    GM_setValue(id, value);
+
+    console.log('set domain[' + id + ']: ', value);
+}
+
+function get_last_domain(id, addr, callback) {
+    let now = new Date().toLocaleDateString();
+    let value = GM_getValue(id);
+
+    if (value == undefined) {
+        console.log('get new domain[' + id + '], addr:' + addr);
+        get_data(addr, domain_callback, { id : id, domain : null, addr : addr, date : now, callback : callback, times : 1 }, domain_timeout);
+    } else if (value.date != now) {
+        console.log('test old domain[' + id + ']:' + value.domain);
+        get_data(value.domain, domain_callback, { id : id, domain : value.domain, addr : addr, date : now, callback : callback, times : 0 }, domain_timeout);
+    } else {
+        console.log('use old domain[' + id + ']:' + value.domain);
+        g_domain[id] = value.domain;
+    }
+}
+
+function get_addr_pos_num() {
+    let ret;
+
+    if ((ret = /\?([^\/]+)\/(.*?)([0-9\-]*)$/.exec(location.href)) !== null) {
+        g_addr[0] = ret[1];
+        g_addr[1] = ret[2] + ret[3];
+        g_pos = ret.index + ret[1].length + ret[2].length + 2;
+        g_num = parseInt(ret[3]);
+        console.log('addr: ' + g_addr[1]);
+        console.log('page: ' + g_addr[0]);
+        console.log('pos:  ' + g_pos);
+        console.log('num:  ' + g_num);
+    }
+}
+
+function new_link(name, addr) {
+    let a = document.createElement('a');
+    a.style='margin-left:10';
+    a.href= document.location.origin + document.location.pathname + addr;
+    a.innerText = name;
+    document.body.appendChild(a);
+}
+
+function add_link() {
+    document.body = document.createElement('body');
+
+    new_link('m', '?m3/');
+    document.body.appendChild(document.createTextNode(' '));
+
+    new_link('7', '?17/');
+    new_link('S', '?17/search/4.html?keyword=ca&page=1');
+    new_link(get_unicode('&#22269;&#20135;'), '?17/category/4.html?category_id=1&page=1');
+    new_link(get_unicode('&#26085;&#38889;'), '?17/category/4.html?category_id=3&page=1');
+    document.body.appendChild(document.createTextNode(' '));
+
+    new_link('8', '?88/');
+    new_link('S', '?88/search/ca/1');
+    new_link('9', '?88/categories/91/1');
+    new_link('L', '?88/video/latest/1');
+    new_link('J', '?88/jav/1');
+    new_link('E', '?88/oumei/1');
+    document.body.appendChild(document.createTextNode(' '));
+
+    new_link('M', '?mm/');
+    let title = get_unicode('&#22269;&#20135;')
+    new_link(title, '?mm/tags/' + title + '/1');
+
+    title = get_unicode('&#20013;&#25991;&#23383;&#24149;');
+    new_link(title, '?mm/tags/' + title + '/1');
+
+    title = get_unicode('&#39640;&#28165;&#26080;&#30721;');
+    new_link(title, '?mm/tags/' + title + '/1');
+
+    document.body.appendChild(document.createTextNode(' '));
+}
+
 function add_video(txt, img, url, xor) {
     let div;
     let video;
@@ -317,31 +273,48 @@ function add_video(txt, img, url, xor) {
 }
 
 function add_pre_next_button(responseText, reg) {
-    let ret;
+    let ret = reg.exec(responseText);
 
-    let a = document.createElement("a");
-    a.innerText = '<';
-    a.href = location.href.substring(0, g_pos) + (g_num - 1);
-    document.body.appendChild(a);
+    if (ret !== null) {
+        let a = document.createElement("a");
+        a.innerText = '<';
+        a.href = location.href.substring(0, g_pos) + (g_num - 1);
+        document.body.appendChild(a);
 
-    if ((ret = reg.exec(responseText)) !== null) {
         a = document.createElement("a");
         a.innerText = ret[1];
         document.body.appendChild(a);
-    }
 
-    a = document.createElement("a");
-    a.innerText = '>';
-    a.href = location.href.substring(0, g_pos) + (g_num + 1);
-    document.body.appendChild(a);
+        a = document.createElement("a");
+        a.innerText = '>';
+        a.href = location.href.substring(0, g_pos) + (g_num + 1);
+        document.body.appendChild(a);
+    }
 }
 
-function add_m3u8_page(addr) {
-    let video = document.createElement('video');
-    video.id = addr;
-    video.onclick = play_m3u8;
-    video.style = 'cursor:pointer;max-width:100%;max-height:100%';
-    document.body.appendChild(video);
+function callback_17_page(url, xhr, param) {
+    let responseText = xhr.responseText;
+    let reg;
+    let ret;
+    let txt = [];
+    let img = [];
+    let m3u = [];
+
+    add_pre_next_button(responseText, /"last_page_p">([0-9/]+)/);
+
+    for (let i = 0, reg = /[0-9]+"\s+data-sl="([^"]+)"[\s\S]+?"rank-title">([^<]+)/g; (ret = reg.exec(responseText)) !== null; i++) {
+        m3u[i] = get_unicode(ret[1]);
+        txt[i] = get_unicode(ret[2]);
+        img[i] = m3u[i].replace('index.m3u8', 'vod_en.jpg');
+    }
+
+    console.log('txt count:' + txt.length);
+    console.log('img count:' + img.length);
+    console.log('m3u count:' + m3u.length);
+
+    add_video(txt, img, m3u, '-xor');
+
+    add_pre_next_button(responseText, /"last_page_p">([0-9/]+)/);
 }
 
 function callback_88_page(url, xhr, param) {
@@ -352,46 +325,21 @@ function callback_88_page(url, xhr, param) {
     let img = [];
     let m3u = [];
 
-    add_pre_next_button(responseText, /data-total-page=\"([0-9]+)\"/);
+    add_pre_next_button(responseText, /data-total-page="([0-9]+)"/);
 
-    for (let i = 0, reg = /<img alt="([^"]+)"[\s\S]+?\/\/([^\/]+)\/videos\/([^\/]+)\//g; (ret = reg.exec(responseText)) !== null; i++) {
+    for (let i = 0, reg = /<img alt="([^"]+)"[\s\S]+?(https:\/\/[^\/]+\/videos\/([^\/]+)\/cover\/5_505_259)/g; (ret = reg.exec(responseText)) !== null; i++) {
         txt[i] = ret[1];
-        img[i] = 'https://' + ret[2] + '/videos/' + ret[3] + '/cover/5_505_259.webp';
-        m3u[i] = 'https://qhshenghuo.xyz/videos/' + ret[3] + '/g.m3u8?h=d11925605f2a1ef';
+        img[i] = ret[2];
+        m3u[i] = 'https://dgtnsy.com/videos/' + ret[3] + '/g.m3u8?h=d11925605f2a1ef';
     }
 
-    console.log('txt count:' + txt.length);
-    console.log('img count:' + img.length);
-    console.log('m3u count:' + m3u.length);
+    console.log('txt: ' + txt.length);
+    console.log('img: ' + img.length);
+    console.log('m3u: ' + m3u.length);
 
     add_video(txt, img, m3u, '');
 
-    add_pre_next_button(responseText, /data-total-page=\"([0-9]+)\"/);
-}
-
-function callback_99_page(url, xhr, param) {
-    let responseText = xhr.responseText;
-    let reg;
-    let ret;
-    let txt = [];
-    let img = [];
-    let m3u = [];
-
-    add_pre_next_button(responseText, /"last_page":([0-9]+)/);
-
-    for (let i = 0, reg = /"title":"([^"]+)"[\s\S]+?"encryptUrl":"([^"]+)"[\s\S]+?"sl":"https?:\\\/\\\/[^\\]+\\\/([0-9]{8})\\\/(\S{8})\\\/.*?"/g; (ret = reg.exec(responseText)) !== null; i++) {
-        txt[i] = JSON.parse('"' + ret[1].replace(/\\\\/g, '\\') + '"');
-        img[i] = ret[2].replace(/\\/g, '');
-        m3u[i] = 'https://' + ((parseInt(ret[3]) >= 20231108) ? 'al1' : 't1') + '.zacuin.com/' + ret[3] + '/' + ret[4] + '/index.m3u8';
-    }
-
-    console.log('txt count:' + txt.length);
-    console.log('img count:' + img.length);
-    console.log('m3u count:' + m3u.length);
-
-    add_video(txt, img, m3u, '-xor');
-
-    add_pre_next_button(responseText, /"last_page":([0-9]+)/);
+    add_pre_next_button(responseText, /data-total-page="([0-9]+)"/);
 }
 
 function callback_mm_page(url, xhr, param) {
@@ -402,12 +350,20 @@ function callback_mm_page(url, xhr, param) {
     let img = [];
     let m3u = [];
 
+    if (ret = /"refresh"[\s\S]+(https:\/\/mm[0-9]+.vip)/.exec(responseText)) {
+        console.log(ret);
+        let value = GM_getValue('mm');
+        value.domain = ret[1];
+        GM_setValue('mm', value);
+        return;
+    }
+
     add_pre_next_button(responseText, />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/);
 
-    for (let i = 0, reg = /data-original="(https:\/\/[^\/]+\/+(\w+)\/(\w+)\/(\w+)\/([0-9a-z]+))\/cover\/cover_encry\.pip[\s\S]*?<h3>([^<]+)</g; (ret = reg.exec(responseText)) !== null; i++) {
-        for (var j = 0, code = ret[6].match(/&#(\d+);/g); j < code.length; j++) { txt[i] += String.fromCharCode(code[j].replace(/[&#;]/g, '')); }
-        img[i] = ret[1] + '/cover/cover_encry.pip';
-        m3u[i] = 'https://zl-365play.as8k.live:8090//' + ret[2] + '/' + ret[3] + '/' + ret[4] + '/' + ret[5] + '/m3u8/maomi365.m3u8';
+    for (let i = 0, reg = /data-original="(https:\/\/[^\/]+\/+(\w+\/\w+\/\w+\/[0-9a-z]+)\/cover\/cover_encry\.pip)[\s\S]*?<h3>([^<]+)/g; (ret = reg.exec(responseText)) !== null; i++) {
+        img[i] = ret[1];
+        txt[i] = get_unicode(ret[3]);
+        m3u[i] = 'https://zl-365play.as8k.live:8090//' + ret[2] + '/m3u8/maomi365.m3u8';
     }
 
     console.log('txt count:' + txt.length);
@@ -422,24 +378,24 @@ function callback_mm_page(url, xhr, param) {
 function get_page() {
     switch (g_addr[0])
     {
-        case 'm3u8':
+        case 'm3':
         {
-            add_m3u8_page(g_addr[1]);
+            add_video([''], [''], [g_addr[1]], ['']);
+            break;
+        }
+        case '17':
+        {
+            get_data(g_domain['17'] + '/' + g_addr[1], callback_17_page);
             break;
         }
         case '88':
         {
-            get_data(g_domain['88'] + g_addr[1], callback_88_page);
-            break;
-        }
-        case '99':
-        {
-            get_data(g_domain['99'] + g_addr[1], callback_99_page);
+            get_data(g_domain['88'] + '/' + g_addr[1], callback_88_page);
             break;
         }
         case 'mm':
         {
-            get_data(g_domain['mm'] + g_addr[1] + '.html', callback_mm_page);
+            get_data(g_domain['mm'] + '/' + g_addr[1] + '.html', callback_mm_page);
             break;
         }
         default:
@@ -451,20 +407,16 @@ function get_page() {
 }
 
 function main() {
-    //GM_deleteValue('date[99]');
-    //GM_deleteValue('domain[99]');
-    //GM_deleteValue('date[88]');
-    //GM_deleteValue('domain[88]');
-    //GM_deleteValue('date[mm]');
-    //GM_deleteValue('domain[mm]');
+    //GM_deleteValue('mm');
+    //GM_setValue('mm', { date : '2024/3/21', domain : 'https://mm307.vip/' });
     //console.log(GM_listValues());
 
     add_link();
     get_addr_pos_num();
 
-    get_last_domain('99', 'http://tai99.net/', 'https://t90760.xyz:9388/', /href="([^"]+)"/);
-    get_last_domain('88', 'https://v88avnetwork.github.io/88av.html', 'https://88a2352.cc/', /href="([^"]+)"/);
-    get_last_domain('mm', 'https://github.com/maomimaomiav/maomi/blob/main/README.md', 'https://mm197.vip/', /"anchor":"️--最新地址--------mm(\d+)vip"/);
+    get_last_domain('17', 'https://fabu1.obs-helf.cucloud.cn/index.html', function(html){ let ret = /color="red">([^<]+)</.exec(html); return ret[1];});
+    get_last_domain('88', 'https://v88avnetwork.github.io/88av.html', function(html){ let ret = /target="_blank">([^<]+)<\/a>/.exec(html); return ret[1];});
+    get_last_domain('mm', 'https://github.com/maomimaomiav/maomi/blob/main/README.md', function(html){ console.log(html);let ret = /最新地址[\s：]+(mm\d+\.vip)"/.exec(html); return 'https://' + ret[1];});
 
     get_page();
 }
