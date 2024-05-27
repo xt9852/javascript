@@ -1,0 +1,833 @@
+<canvas id="webgl" width="600" height="600"></canvas>
+
+<button onclick=next()>next</button>
+
+<script>
+  "use strict";
+
+  // l子由1步进挡片,2步进字母,3密码字母组成
+  // 步进挡片,步进字母固定组成圆环,套在密码字母轴上
+  // 步进组合体可密码字母轴上旋转
+  // 结构:轮>部>齿>点>xyz
+  //    /---\/---\/---\
+  //    | 1 || 2 || 3 |
+  //    ----------|   |
+  //              |   |
+  //              |   |
+  //              |   |
+  //              |   |
+  //              |   |
+  //    ----------|   |
+  //    | 1 || 2 || 3 |
+  //    \---/\---/\---/
+
+  var gl;
+  var canvas;
+  var matrix;
+  var vtx   = [];
+  var clr   = [];
+  var idx   = [];
+
+  var x     = [];
+  var y     = [];
+  var z     = [];
+  var txt   = [];
+  var enc   = [];
+  var step  = [];   // 步进标记
+  var left  = 0;
+  var angle = 45;
+
+  // p鼠标位置,d增量鼠标位置变化,a角度,l上次角度
+  var mouse_data = { drag:false, p : {x:0, y:0}, a : {x:-45, y:0}, d : {x:0, y:0}, l : {x:0, y:0} };
+
+  // 驱动杆:中心点,宽,厚,各驱动杆部件0(中心点,位置),各驱动杆部件1(中心点,位置)
+  var drive = { x:[0,0], y:[0,0], cx:.05, cz:.02, beg:0, len:0, item:[] };
+
+  // 轮子:数量,半径(触点,内,外,牙),宽(挡片,步进,密码,轮宽,总宽),间隔(部件间隔,轮子间隔),牙(数量,高,最底牙),各轮子位置
+  var wheel = { num:10, r:[.4,.45,.5,.53], cx:[.03,.05,.05,0,0], space:[.001,.01], tooth:{num:36,cy:.05,low:0}, beg:0,len:0, text:{beg:0,len:0}, item:[]};
+
+  // 部件:中心点,宽,高,位置,数量
+  var axis = [];
+
+  // 三角形
+  function _t(p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,r,g,b) {
+     clr.push(r,g,b, r,g,b, r,g,b);
+     vtx.push(p0x,p0y,p0z, p1x,p1y,p1z, p2x,p2y,p2z);
+  }
+
+  // 面
+  function _f(p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,p3x,p3y,p3z,r,g,b) {
+     clr.push(r,g,b, r,g,b, r,g,b, r,g,b, r,g,b, r,g,b);
+     vtx.push(p0x,p0y,p0z, p1x,p1y,p1z, p3x,p3y,p3z, p0x,p0y,p0z, p2x,p2y,p2z, p3x,p3y,p3z);
+  }
+
+  // 环
+  function _r(h, z0, z1) {
+    for (var l = 0; l < x[h].length; l++) {
+      var n = (l == x[h].length - 1) ? 0 : (l + 1); // 下一面
+      _f(x[h][l],y[h][l],z0, x[h][l],y[h][l],z1, x[h][n],y[h][n],z0, x[h][n],y[h][n],z1, 0,1,1);        // 前后
+    }
+
+    for (var l = 0; l < x[h].length / 2; l++) {
+      var m = x[h].length - 1 - l;
+      _f(x[h][l],y[h][l],z0, x[h][l+1],y[h][l+1],z0, x[h][m],y[h][m],z0, x[h][m-1],y[h][m-1],z0, 1,0,1);// 左
+      _f(x[h][l],y[h][l],z1, x[h][l+1],y[h][l+1],z1, x[h][m],y[h][m],z1, x[h][m-1],y[h][m-1],z1, 1,0,1);// 右
+    }
+  }
+
+  // 初始化数据
+  function init() {
+    // 轮子
+    wheel.cx[3] = wheel.cx[0] + wheel.cx[1] + wheel.space[0] + wheel.cx[2] + wheel.space[1];
+    wheel.cx[4] = wheel.cx[3] * wheel.num - wheel.space[1];
+
+    // 最左侧
+    left = wheel.cx[4] / 2;
+
+    // 轮子
+    for (var i = 0; i < wheel.num; i++) {
+      wheel.item.push({ text:[{beg:0,len:0},{beg:0,len:0}], part:[{z:0,beg:0,len:0},{z:0,beg:0,len:0},{z:0,beg:0,len:0}] });
+      wheel.item[i].part[0].z = (i == 0) ? left : (wheel.item[i-1].part[0].z - wheel.cx[3]);
+      wheel.item[i].part[1].z = wheel.item[i].part[0].z - wheel.cx[0];
+      wheel.item[i].part[2].z = wheel.item[i].part[1].z - wheel.cx[1] - wheel.space[0];
+    }
+
+    // 驱动部件:0-步进推杆,1-密码推杆,2-步进锁杆,3-密码锁杆
+    for (var i = 0; i < wheel.num; i++) {
+      drive.item.push({part:[ {z:[0,0],beg:0,len:0},{z:[0,0],beg:0,len:0},{z:[0,0],beg:0,len:0},{z:[0,0],beg:0,len:0} ]});
+      drive.item[i].part[0].z[0] = wheel.item[i].part[1].z - (wheel.cx[1] - drive.cz) / 2;
+      drive.item[i].part[0].z[1] = drive.item[i].part[0].z[0] - drive.cz;
+      drive.item[i].part[1].z[0] = wheel.item[i].part[2].z - (wheel.cx[2] - drive.cz) / 2;
+      drive.item[i].part[1].z[1] = drive.item[i].part[1].z[0] - drive.cz;
+      drive.item[i].part[2].z[0] = wheel.item[i].part[1].z - (wheel.cx[1] - drive.cz) / 2;
+      drive.item[i].part[2].z[1] = drive.item[i].part[2].z[0] - drive.cz;
+      drive.item[i].part[3].z[0] = wheel.item[i].part[2].z - (wheel.cx[2] - drive.cz) / 2;
+      drive.item[i].part[3].z[1] = drive.item[i].part[3].z[0] - drive.cz;
+    }
+
+    // 轴
+    for (var i = 0; i < 3; i++) {
+      axis.push({ x:0, y:0, cx:.02, cy:.02, beg:0, len:0 });
+    }
+
+    // 生成步进标记
+    for (var i = 0; i < wheel.num; i++) {
+      for (var tmp = [], j = 0; j < wheel.tooth.num; j++) {
+        tmp.push(Math.round(Math.random()));
+      }
+
+      step.push(tmp);
+    }
+
+    // 密码
+    for (var i = 0; i < wheel.num * 2; i++) {
+       enc.push(Math.round(Math.random() * (wheel.tooth.num - 1)));
+    }
+
+    console.log('wheel:', wheel);
+    console.log('drive:', drive);
+    console.log('axis:',  axis);
+    console.log('step:',  step);
+    console.log('enc:',   enc);
+  }
+
+  // 生成文字的2维坐标
+  function make_text_coord() {
+    console.log('-------make_text_coord');
+
+    var mask =
+      '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'+
+      '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'+
+      '000001111110000000000000000000000000000000000000000000000000000000000000001100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'+
+      '000111111111100000000111110000000001111111111000000111111111100000000000111100000001111111111100000011111111110000111111111111100011111111111000001111111111100000000011110000001111111111111100000011111111111011111111111110001111111111111100111111111111111000011111111111001111111001111111001111111111110000001111111111111111111011111110111111110000000011111000000111111111110000111111000111111111100011111111111111000001111111111000111111111111110000111111111111000111111111111110111111100011111111111110001111111111111111111111111111100111111111111110011111110011111111111110'+
+      '001111000011110000011111110000000111100000111100001110000111110000000001111100000011100000000000001111100011110000111100000111000111100000111100011111000011110000000111111000000011100000111110001111100001111000111000011111000011110000011110001111000000111100111100001111000111100000011100000000111100000000000000111100000011100001111000001111000000000001111000001111100011111000001100001111000011110000111100000111100011110000111100001111000011111001111000001111001111001111001110011110000000110000111100000111000111000111001110001111100011100000111100000111000111100000111100'+
+      '011110000001111000000011110000000111110000011100001110000011110000000011111100000011100000000000001110000000000001110000001110000111100000011110011110000001111000000111111000000011100000011110011110000000011100111000000111100011110000000110001111000000001101111000000111000111100000011100000000111100000000000000111100000011100111100000001111000000000001111100001111100011111100001100011110000001111000111100000011100111100000011110001111000001111001110000000111001110001111000111011110000000110000111100001110000111100111001110000111110111000000011110001110000111000001111000'+
+      '011110011001111000000011110000000111110000111100000000000111110000000111011100000011111111110000011110000000000000000000111100000111111000011100011100000001111000001110111100000011100000111100111100000000000000111000000011100011110000110000001111000011100011110000000000000111100000011100000000111100000000000000111100000011101111000000001111000000000001111100011111100011111110001100011100000000111100111100000111101111000000001111001111000011111001111100000000000000001111000000011110000000110000011110001110000111101111101100000011111110000000011111011100000000000011110000'+
+      '011110111101111000000011110000000000000001111100000001111111000000011110011100000011111111111100011111111111110000000001111000000001111111111000011110000011111000001110111100000011111111111000111100000000000000111000000011110011111111110000001111111111100011110000000000000111100000011100000000111100000000000000111100000011111111000000001111000000000001111110011111100011011111001100111100000000111100111100111111101111000000001111001111111111110000111111111000000000001111000000011110000000110000011110011100000011101111111100000001111100000000001111111000000000000111100000'+
+      '011110111101111000000011110000000000000011110000000000011111110000111100011100000011100000111110011111000011111000000001110000000011111111111000011111101111111000011100011100000011100011111110111100000000000000111000000011110011110001110000001111000111100011110000000000000111111111111100000000111100000000000000111100000011111111100000001111000000000001101110111111100011001111101100111100000000111100111111111110001111000000001111001111011110000000000111111110000000001111000000011110000000110000001111011100000011111111111100000000111100000000000111110000000000011111000000'+
+      '011110011001111000000011110000000000001111000000000000000011111001110000011100000000000000011110011110000001111000000011110000000111100001111110000111111111111000011111111110000011100000011110111100000000000000111000000011110011110000110000001111000011100011110000111111110111100000011100000000111100000000000000111100000011100111110000001111000000000001101111110111100011000011111100111100000000111100111100000000001111000000001111001111001111000000000000011111100000001111000000011110000000110000001111111000000011111111111000000001111110000000000011110000000000111110000000'+
+      '011110000001111000000011110000000000111100001110001110000001111011111111111111110111100000011110011110000001111000000111100000000111000000011110000000000011110000111000001110000011100000001111011110000000011100111000000111100011110000000000001111000000000001111000000111000111100000011100000000111100000000000000111100000011100011111000001111000000000001101111110111100011000001111100011110000000111100111100000000000111111111001110001111000111100001100000000111100000001111000000011110000000110000000111111000000001111011111000000011101111000000000011110000000001111100000000'+
+      '001111000011110000000011110000000011110000001110011110000001111000000000011100000111100000111100011111000001111000000111100000000111000000011110001111000011110000111000001111000011100000011111011110000000111000111000001111100011110000000111001111000000000001111000000111000111100000011100000000111100000000000000111100000011100001111100001111000000011101100111100111100011000000111100011110000001111000111100000000000111111111111110001111000111110001110000000111100000001111000000001110000001110000000111110000000001111001110000000111000111100000000011110000000011111000001110'+
+      '000111111111100000000111111000000111111111111100011111101111110000000000011100000011111011111100001111110111110000000111100000000111111011111100001111011111100001110000001111100011110001111110001111110111110000111101111110000011110000111110001111000000000000111111011111000111100000011110000000111100000000000000111100000011110000111110001111000011111001110111100111100111000000011100000111111111110000111100000000000011111111111100001111000011111001111111011111000000001111000000001111110111110000000011100000000001111001110000011110000011111000000011110000000111100001111110'+
+      '000001111110000000011111111111000111111111111100000111111111000000000111111111100000111111110000000011111111000000000111100000000000111111110000000111111100000011111100011111111111111111111000000011111111000011111111111000001111111111111110111111110000000000001111111000001111111001111111001111111111110000000000111100001111111001111111111111111111111011111011011111111111110000001100000001111111000011111111000000000000111111111110111111100001111100111111111100000000111111110000000011111111000000000011100000000000110001110000111111000111111100001111111100000111111111111100'+
+      '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111000111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'+
+      '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+
+    var num = mask.length / 16 / 16;
+
+    console.log('mask:', num);
+
+    var x;
+    var y;
+    var r;
+    var s;
+    var c;
+    var a = -360 / wheel.tooth.num * Math.PI / 180;
+    var l = wheel.r[3] - wheel.r[2];
+    var b = Math.atan(l / wheel.tooth.cy);
+    var d = wheel.tooth.cy / 16;
+    var tmp = [];
+
+    for (var t = 0; t < num; t++) {
+      r = a * t;
+      s = Math.sin(r);
+      c = Math.cos(r);
+      for (var i = 0; i < 16; i++) {
+        x = wheel.r[2] + d * i * Math.tan(b);
+        y = -i*0.003;
+        for (var j = 0; j < 16; j++) {
+          if (mask[t*16 + i*num*16 + j] == '1') {
+            tmp.push(x*c - y*s, y*c + x*s, j*0.003);
+          }
+        }
+      }
+    }
+
+    for (var i = 0; i < num; i++) {
+      txt[i] = [];
+
+      for (var j = 0; j < tmp.length; j++) {
+        txt[i].push(tmp[j]);
+      }
+
+      rotateZ_(txt[i], 360 / wheel.tooth.num * i, 0, tmp.length / 3, 0, 0);
+    }
+
+    console.log('tmp/3:', tmp.length / 3);
+  }
+
+  // 生成轮子的2维坐标
+  function make_wheel_coord() {
+    console.log('-------make_wheel_coord');
+
+    var r0              = Math.PI / 180 * 360 / wheel.tooth.num;
+    var r1              = Math.atan(wheel.tooth.cy / wheel.r[2]);
+    var r2;
+    var r3;
+    var sin_f;
+    var cos_f;
+    var sin_b;
+    var cos_b;
+    var lowest_tooth_y  = 0;
+
+    for (var i = 0; i < wheel.tooth.num; i++) {
+      r2    = r0 * i;
+      r3    = r2 - r1;
+      sin_f = Math.sin(r2); // 前面
+      cos_f = Math.cos(r2);
+      sin_b = Math.sin(r3); // 后面
+      cos_b = Math.cos(r3);
+
+      // 触点,内,外,牙
+      x.push( [ wheel.r[0]*cos_b, wheel.r[1]*cos_f,wheel.r[1]*cos_b, wheel.r[2]*cos_f,wheel.r[2]*cos_b, wheel.r[3]*cos_f,wheel.r[3]*cos_b ] );
+      y.push( [ wheel.r[0]*sin_b, wheel.r[1]*sin_f,wheel.r[1]*sin_b, wheel.r[2]*sin_f,wheel.r[2]*sin_b, wheel.r[3]*sin_f,wheel.r[3]*sin_b ] );
+
+      var tmp = wheel.r[3] * sin_f;
+
+      // 查找最底齿的id
+      if (tmp < lowest_tooth_y) {
+        lowest_tooth_y = tmp;
+        wheel.tooth.low = i;
+      }
+    }
+
+    console.log('wheel.tooth.low:', wheel.tooth.low);
+    console.log('x:', x.length);
+    console.log('y:', y.length);
+  }
+
+  // 生成驱动部件的2维坐标
+  function make_drive_coord() {
+    console.log('-------make_drive_coord');
+
+    var l = wheel.tooth.low;
+
+    // 推杆
+    x.push([ x[0][3]+drive.cx, x[0][6]+drive.cx, x[0][6]+drive.cx, x[0][6]+2*drive.cx, x[0][6]+drive.cx, x[0][6], x[0][6]+0.001, x[0][3]+0.001]);
+    y.push([ y[0][3],          y[0][6],          y[l][3]+drive.cx, y[l][3]+drive.cx,   y[l][3],          y[l][3], y[0][6],       y[0][3]]);
+
+    // 锁杆
+    x.push([ x[l][3]+0.001, x[l][3], x[0][6]+2.5*drive.cx, x[0][6]+2.5*drive.cx, x[0][6]+1.5*drive.cx, x[0][6]+2.5*drive.cx,  x[0][6]+3.5*drive.cx, x[0][6]+3.5*drive.cx, x[l][6],          x[l][6]+0.001 ]);
+    y.push([ y[l][3],       y[l][6], y[l][6],              y[l][3]+drive.cx,     y[l][3]+drive.cx,     y[l][3]+2*drive.cx,    y[l][3]+2*drive.cx,   y[l][6]-drive.cx,     y[l][6]-drive.cx, y[l][6] ]);
+
+    // 推杆头
+    x.push([ x[0][3]+drive.cz, x[0][6]+drive.cz, x[0][6]+0.001, x[0][3]+0.001]);
+    y.push([ y[0][3],          y[0][6],          y[0][6],       y[0][3]]);
+
+    var i = wheel.tooth.num;
+    var j = wheel.tooth.num + 1;
+    console.log('x[' + i + ']:' + x[i].length);
+    console.log('y[' + i + ']:' + y[i].length);
+    console.log('x[' + j + ']:' + x[j].length);
+    console.log('y[' + j + ']:' + y[j].length);
+    console.log('x:', x.length);
+    console.log('y:', y.length);
+  }
+
+  // 生成文字
+  function make_text(id, t) {
+    console.log('-------make_text id:', id, t);
+
+    for (var i = 0; i < 2; i++) { // 每个轮子2列字母
+      wheel.item[id].text[i].beg = vtx.length / 3;
+
+      for (var j = 3; j < txt[t[i]].length; j += 3) {
+        clr.push(1,1,1);
+        vtx.push(txt[t[i]][j], txt[t[i]][j+1], wheel.item[id].part[i + 1].z - txt[t[i]][j+2]);
+      }
+
+      wheel.item[id].text[i].len = vtx.length / 3 - wheel.item[id].text[i].beg;
+      console.log('wheel['+ id +']['+ i +'] beg:' + wheel.item[id].text[i].beg, 'len:' + wheel.item[id].text[i].len);
+    }
+  }
+
+  // 生成轮子
+  function make_wheel(id) {
+    console.log('-------make_wheel id:', id);
+
+    wheel.item[id].beg = vtx.length / 3;
+
+    for (var p = 0; p < 3; p++) { // 3个部分
+      wheel.item[id].part[p].beg = vtx.length / 3;
+
+      var z0 = wheel.item[id].part[p].z;
+      var z1 = z0 - wheel.cx[p];
+
+      for (var t = 0; t < wheel.tooth.num; t++) {
+        var n = (t == wheel.tooth.num - 1) ? 0 : (t + 1); // 下一齿id
+        var r = 360 / wheel.tooth.num * t * Math.PI / 180;
+        var a = Math.cos(r) * wheel.r[0]; // x
+        var b = Math.sin(r) * wheel.r[0]; // y;
+
+        if (p == 0 && step[id][t] == 1) {
+          _f(x[t][5],y[t][5],z0, x[t][5],y[t][5],z1, x[t][6],y[t][6],z0, x[t][6],y[t][6],z1, 0,0,1);// 齿顶
+          _f(x[n][6],y[n][6],z0, x[n][6],y[n][6],z1, x[t][5],y[t][5],z0, x[t][5],y[t][5],z1, 0,0,1);// 槽顶
+          _f(x[n][6],y[n][6],z0, x[t][6],y[t][6],z0, x[n][4],y[n][4],z0, x[t][3],y[t][3],z0, 1,1,0);// 槽左
+          _f(x[n][6],y[n][6],z1, x[t][6],y[t][6],z1, x[n][4],y[n][4],z1, x[t][3],y[t][3],z1, 1,1,0);// 槽右
+        }
+
+        if (p == 0 && step[id][t] == 0) {
+          _f(x[t][3],y[t][3],z0, x[t][3],y[t][3],z1, x[t][4],y[t][4],z0, x[t][4],y[t][4],z1, 0,1,0);// 齿底
+          _f(x[n][4],y[n][4],z0, x[n][4],y[n][4],z1, x[t][3],y[t][3],z0, x[t][3],y[t][3],z1, 0,1,0);// 齿槽
+          _t(x[t][3],y[t][3],z1, x[t][4],y[t][4],z1, x[t][6],y[t][6],z1, 1,1,0);                    // 齿左
+        }
+
+        if (p == 0 && step[id][t] == 0 && step[id][n] == 1) {
+          _f(x[n][4],y[n][4],z0, x[n][4],y[n][4],z1, x[n][6],y[n][6],z0, x[n][6],y[n][6],z1, 0,0,1);// 齿后
+        }
+
+        if (p == 0 && step[id][t] == 1 && step[id][n] == 0) {
+          _f(x[n][3],y[n][3],z0, x[n][3],y[n][3],z1, x[n][6],y[n][6],z0, x[n][6],y[n][6],z1, 0,0,1);// 齿前
+        }
+
+        if (id == 0 && p == 0) {                                                                                // 轮左
+          _t(x[t][1],y[t][1],z0, x[t][2],y[t][2],z0, 0,0,z0, 1,1,0);
+          _t(x[t][1],y[t][1],z0, x[n][2],y[n][2],z0, 0,0,z0, 1,1,0);
+          _f(x[t][1],y[t][1],z0, x[t][2],y[t][2],z0, x[t][3],y[t][3],z0, x[t][4],y[t][4],z0, 0,1,0);
+          _f(x[t][1],y[t][1],z0, x[n][2],y[n][2],z0, x[t][3],y[t][3],z0, x[n][4],y[n][4],z0, 0,1,0);
+
+          _f(a-.01,b+.01,z0+.0001, a+.01,b+.01,z0+.0001, a-.01,b-.01,z0+.0001, a+.01,b-.01,z0+.0001, 1,0,0);    // 触点
+          rotateZ_(vtx, 360 / wheel.tooth.num * t, vtx.length / 3 - 6, 6, a, b);
+        }
+
+        if (id == 0 && p == 0 && step[id][t] == 1) {
+          _t(x[t][3],y[t][3],z0, x[t][4],y[t][4],z0, x[t][6],y[t][6],z0, 1,1,0);                                // 齿左
+        }
+
+        if (id == 0 && p == 0 && step[id][t] == 1 && step[id][n] == 0) {
+          _t(x[n][3],y[n][3],z0, x[n][4],y[n][4],z0, x[n][6],y[n][6],z0, 1,1,0);                                // 齿左
+        }
+
+        if (id == wheel.num - 1 && p == 2) {
+          _t(x[t][3],y[t][3],z1, x[t][4],y[t][4],z1, x[t][6],y[t][6],z1, 1,1,0);                                // 轮右
+          _t(x[t][3],y[t][3],z1, x[t][4],y[t][4],z1, 0,0,z1, 1,1,0);
+          _t(x[t][3],y[t][3],z1, x[n][4],y[n][4],z1, 0,0,z1, 1,1,0);
+
+          _f(a-.01,b+.01,z1-.0001, a+.01,b+.01,z1-.0001, a-.01,b-.01,z1-.0001, a+.01,b-.01,z1-.0001, 1,0,0);    // 触点
+          rotateZ_(vtx, 360 / wheel.tooth.num * t, vtx.length / 3 - 6, 6, a, b);
+        }
+
+        if (p == 1) {
+          _f(x[n][4],y[n][4],z0, x[n][4],y[n][4],z1, x[t][3],y[t][3],z0, x[t][3],y[t][3],z1, 0,1,0);            // 齿槽
+        }
+
+        if (p == 2) {
+          _f(x[n][4],y[n][4],z0, x[n][4],y[n][4],z1, x[t][3],y[t][3],z0, x[t][3],y[t][3],z1, 1,1,0);// 齿槽
+        }
+
+        if (p != 0) {
+          _f(x[t][3],y[t][3],z0, x[t][3],y[t][3],z1, x[t][6],y[t][6],z0, x[t][6],y[t][6],z1, 1,0,0);// 齿顶
+          _f(x[t][4],y[t][4],z0, x[t][4],y[t][4],z1, x[t][6],y[t][6],z0, x[t][6],y[t][6],z1, 0,0,1);// 齿后
+        }
+      }
+
+      wheel.item[id].part[p].len = vtx.length / 3 - wheel.item[id].part[p].beg;
+      console.log('wheel['+ id +']['+ p +'] beg:' + wheel.item[id].part[p].beg, 'len:' + wheel.item[id].part[p].len);
+    }
+
+    wheel.item[id].len = vtx.length / 3 - wheel.item[id].beg;
+    console.log('wheel['+ id +'] beg:' + wheel.item[id].beg, 'len:' + wheel.item[id].len);
+  }
+
+  // 生成驱动部件
+  function make_drive(id) {
+    console.log('-------make_drive id:', id);
+
+    drive.item[id].beg = vtx.length / 3;
+
+    // 驱动部件:0-步进推杆,1-密码推杆,2-步进锁杆,3-密码锁杆
+    for (var i = 0; i < 2; i++) {
+      for (var j = 0; j < 2; j++) {
+        var p = 2 * i + j;
+        var k = wheel.tooth.num + i;
+        var h = wheel.tooth.num + 2;
+        var z0 = drive.item[id].part[p].z[0];
+        var z1 = drive.item[id].part[p].z[1];
+
+        drive.item[id].part[p].beg = vtx.length / 3;
+
+        if (i == 0 && j == 1) {
+          _r(h, z1, z1 - wheel.cx[2] / 2 - wheel.space[1] - wheel.cx[0] / 2);
+        }
+
+        _r(k, z0, z1);
+
+        drive.item[id].part[p].len = vtx.length / 3 - drive.item[id].part[p].beg;
+        console.log('drive['+ id +']['+ p +'] beg:' + drive.item[id].part[p].beg, 'len:' + drive.item[id].part[p].len);
+      }
+    }
+
+    drive.item[id].len = vtx.length / 3 - drive.item[id].beg;
+    console.log('drive['+ id +'] beg:' + drive.item[id].beg, 'len:' + drive.item[id].len);
+
+    // 旋转
+    if (id < (wheel.num - 1) && step[id + 1][0] == 1) {
+      var a = Math.atan((wheel.r[3] - wheel.r[2]) / (wheel.tooth.cy + wheel.r[3] / 4)) * 180 / Math.PI;
+      rotateZ_(vtx, -a, drive.item[id].part[1].beg, drive.item[id].part[1].len, axis[1].x, axis[1].y);
+    }
+  }
+
+  // 生成对象
+  function make_other(angle) {
+    console.log('-------make_other');
+
+    axis[0].x = 0;
+    axis[0].y = 0;
+    axis[1].x = x[0][6] + drive.cx / 2;
+    axis[1].y = y[0][6] - wheel.r[3] / 3;
+    axis[2].x = x[wheel.tooth.low][6] + wheel.r[3] / 2;
+    axis[2].y = y[wheel.tooth.low][6] - drive.cx / 2;
+
+    var r = [ .05, .005, .005 ];
+
+    for (var i = 0; i < 3; i++) {
+      axis[i].beg = vtx.length / 3;
+
+      var a = axis[i].x;
+      var b = axis[i].y;
+
+      clr.push(
+        1,0,0,1,0,0,1,0,0, 1,0,0,1,0,0,1,0,0,
+        0,1,0,0,1,0,0,1,0, 0,1,0,0,1,0,0,1,0,
+        0,0,1,0,0,1,0,0,1, 0,0,1,0,0,1,0,0,1,
+        0,1,1,0,1,1,0,1,1, 0,1,1,0,1,1,0,1,1,
+        1,0,1,1,0,1,1,0,1, 1,0,1,1,0,1,1,0,1,
+        1,0,1,1,0,1,1,0,1, 1,0,1,1,0,1,1,0,1,
+      );
+
+      vtx.push(
+        a-r[i],b+r[i], left,      a+r[i],b+r[i], left,      a+r[i],b+r[i],-left,      a-r[i],b+r[i], left,      a-r[i],b+r[i],-left,      a+r[i],b+r[i],-left,
+        a-r[i],b-r[i], left,      a+r[i],b-r[i], left,      a+r[i],b-r[i],-left,      a-r[i],b-r[i], left,      a-r[i],b-r[i],-left,      a+r[i],b-r[i],-left,
+        a-r[i],b-r[i], left,      a-r[i],b+r[i], left,      a-r[i],b+r[i],-left,      a-r[i],b-r[i], left,      a-r[i],b-r[i],-left,      a-r[i],b+r[i],-left,
+        a+r[i],b-r[i], left,      a+r[i],b+r[i], left,      a+r[i],b+r[i],-left,      a+r[i],b-r[i], left,      a+r[i],b-r[i],-left,      a+r[i],b+r[i],-left,
+        a-r[i],b-r[i], left+.001, a+r[i],b-r[i], left+.001, a+r[i],b+r[i], left+.001, a-r[i],b-r[i], left+.001, a-r[i],b+r[i], left+.001, a+r[i],b+r[i], left+.001,
+        a-r[i],b-r[i],-left-.001, a+r[i],b-r[i],-left-.001, a+r[i],b+r[i],-left-.001, a-r[i],b-r[i],-left-.001, a-r[i],b+r[i],-left-.001, a+r[i],b+r[i],-left-.001,
+      );
+
+      axis[i].len = vtx.length / 3 - axis[i].beg;
+      console.log('axis['+ i +'] beg:' + axis[i].beg, 'len:' + axis[i].len);
+    }
+
+    // 旋转45度
+    rotateZ_(vtx, angle, axis[0].beg, axis[0].len, 0, 0);
+  }
+
+  // 生成对象
+  function make_obj(angle) {
+    clr.length = 0;
+    vtx.length = 0;
+
+    make_other(angle);
+
+    drive.beg = vtx.length / 3;
+
+    for (var i = 0; i < wheel.num; i++) {
+      make_drive(i);
+    }
+
+    drive.len = vtx.length / 3 - drive.beg;
+    wheel.beg = vtx.length / 3;
+
+    for (var i = 0; i < wheel.num; i++) {
+      make_wheel(i);
+    }
+
+    wheel.len = vtx.length / 3 - wheel.beg;
+    wheel.text.beg = vtx.length / 3;
+
+    for (var i = 0; i < wheel.num; i++) {
+      make_text(i, [ enc[i * 2], enc[i * 2 + 1] ]);
+    }
+
+    wheel.text.len = vtx.length / 3 - wheel.text.beg;
+  }
+
+  //===================== Mouse events =====================
+
+  function mouseDown(e) {
+    mouse_data.p.x  = e.x;
+    mouse_data.p.y  = e.y;
+    mouse_data.drag = true;
+    return false;
+  };
+
+  function mouseUp(e){
+    mouse_data.drag = false;
+  };
+
+  function mouseMove(e) {
+    if (!mouse_data.drag) return false;
+
+    mouse_data.d.x = e.x - mouse_data.p.x;
+    mouse_data.d.y = e.y - mouse_data.p.y;
+    mouse_data.a.x = (mouse_data.a.x + mouse_data.d.x) % 360;
+    mouse_data.a.y = (mouse_data.a.y + mouse_data.d.y) % 360;
+    mouse_data.p.x = e.x;
+    mouse_data.p.y = e.y;
+  };
+
+  //======================== webgl =========================
+
+  function main() {
+    //=================== Creating a canvas ===================
+
+    canvas = document.getElementById('webgl');
+    gl = canvas.getContext('webgl');
+
+    //=========== Defining and storing the geometry ===========
+
+    // Create and store data into vertex buffer
+    var vertex_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vtx), gl.STATIC_DRAW);
+
+    // Create and store data into color buffer
+    var color_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(clr), gl.STATIC_DRAW);
+
+    // Create and store data into index buffer
+    var index_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
+
+    //======================== SHADERS ========================
+
+    var vertCode =
+      'varying   vec3 vcolor;'+
+      'attribute vec3 acolor;'+
+      'attribute vec3 aposition;'+
+      'uniform   mat4 projview;'+
+      'uniform   mat4 move;'+
+      'void main(void) {'+
+         'gl_PointSize = 1.5;'+
+         'gl_Position = projview*move*vec4(aposition, 1.);'+
+         'vcolor = acolor;'+
+      '}';
+
+    var fragCode =
+      'precision mediump float;'+
+      'varying   vec3    vcolor;'+
+      'void main(void) {'+
+         'gl_FragColor = vec4(vcolor, 1.);'+
+      '}';
+
+    var vertShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertShader, vertCode);
+    gl.compileShader(vertShader);
+
+    var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragShader, fragCode);
+    gl.compileShader(fragShader);
+
+    var shaderprogram = gl.createProgram();
+    gl.attachShader(shaderprogram, vertShader);
+    gl.attachShader(shaderprogram, fragShader);
+    gl.linkProgram(shaderprogram);
+    gl.useProgram(shaderprogram);
+
+    //======== Associating attributes to vertex shader ========
+    matrix = gl.getUniformLocation(shaderprogram, "move");
+    var projview = gl.getUniformLocation(shaderprogram, "projview");
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+    var position = gl.getAttribLocation(shaderprogram, "aposition");
+    gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(position);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+    var color = gl.getAttribLocation(shaderprogram, "acolor");
+    gl.vertexAttribPointer(color, 3, gl.FLOAT, false, 0, 0) ;
+    gl.enableVertexAttribArray(color);
+
+    //======================== MATRIX ========================
+
+    // mat4按列存储数据
+
+    // 平移矩阵
+    // |  1    0    1    x|
+    // |  0    1    0    y|
+    // |  0    0    1    z|
+    // |  0    0    0    1|
+
+    // 缩放矩阵
+    // |  x    0    1    0|
+    // |  0    y    0    0|
+    // |  0    0    z    0|
+    // |  0    0    0    1|
+
+    // 绕x轴旋转矩阵
+    // |  1    0    0    0|
+    // |  0  cos -sin    0|
+    // |  0  sin  cos    0|
+    // |  0    0    0    1|
+
+    // 绕y轴旋转矩阵
+    // |cos    0 -sin    0|
+    // |  0    1    0    0|
+    // |sin    0  cos    0|
+    // |  0    0    0    1|
+
+    // 绕z轴旋转矩阵
+    // |cos -sin    0    0|
+    // |sin  cos    0    0|
+    // |  0    0    1    0|
+    // |  0    0    0    1|
+
+    // 视场角a,成像设备的宽高比r,场景中能看到的最近距离n和最远距离f,幕布到眼睛距离d
+    // 投影矩阵用于投影变换,是三维场景中的物体渲染到二维屏幕的重要过程之一
+    // 视图矩阵用于观看到图像,移动幕布到眼睛可看到的位置
+    //
+    // 投影矩阵 * 视图矩阵
+    //
+    // |1 / (r * t),     0,                  0,                      0|        |1,0,0,0|
+    // |          0, 1 / t,                  0,                      0|   \/   |0,1,0,0| ----
+    // |          0,     0, (-f - n) / (f - n), (-2 * f * n) / (f - n)|   /\   |0,0,1,d| ----
+    // |          0,     0,                 -1,                      0|        |0,0,0,1|
+    //
+    // |1 / (r * t),     0,                  0,                                               0|
+    // |          0, 1 / t,                  0,                                               0|
+    // |          0,     0, (-f - n) / (f - n), d * (-f - n) / (f - n) + (-2 * f * n) / (f - n)|
+    // |          0,     0,                 -1,                                              -d|
+    function getProjViewMatrix(a, r, n, f, d) {
+      var t = Math.tan(a * Math.PI / 180.0 / 2.0);
+      return [
+        1 / (r * t),     0,                                               0,      0,
+                  0, 1 / t,                                               0,      0,
+                  0,     0,                              (-f - n) / (f - n),     -1,
+                  0,     0, d * (-f - n) / (f - n) + (-2 * f * n) / (f - n),     -d
+	  ];
+    }
+
+    gl.uniformMatrix4fv(projview, false, getProjViewMatrix(40, canvas.width/canvas.height, 1, 100, -3));
+
+    canvas.addEventListener("mousedown", mouseDown, false);
+    canvas.addEventListener("mouseup",   mouseUp,   false);
+    canvas.addEventListener("mouseout",  mouseUp,   false);
+    canvas.addEventListener("mousemove", mouseMove, false);
+  }
+
+  //======================= rotation =======================
+
+  function rotateX(m, ang) {
+    var r = ang * Math.PI / 180.0;
+    var s = Math.sin(r);
+    var c = Math.cos(r);
+    var t = [ m[1], m[5], m[9] ];
+
+    m[1]  = m[1]*c  - m[2]*s;
+    m[5]  = m[5]*c  - m[6]*s;
+    m[9]  = m[9]*c  - m[10]*s;
+
+    m[2]  = m[2]*c  + t[0]*s;
+    m[6]  = m[6]*c  + t[1]*s;
+    m[10] = m[10]*c + t[2]*s;
+  }
+
+  function rotateY(m, ang) {
+    var r = ang * Math.PI / 180.0;
+    var s = Math.sin(r);
+    var c = Math.cos(r);
+    var t = [ m[0], m[4], m[8] ];
+
+    m[0]  = m[0]*c  + m[2]*s;
+    m[4]  = m[4]*c  + m[6]*s;
+    m[8]  = m[8]*c  + m[10]*s;
+
+    m[2]  = m[2]*c  - t[0]*s;
+    m[6]  = m[6]*c  - t[1]*s;
+    m[10] = m[10]*c - t[2]*s;
+  }
+
+  function rotateZ(m, ang) {
+    var r = ang * Math.PI / 180.0;
+    var s = Math.sin(r);
+    var c = Math.cos(r);
+    var t = [ m[0], m[4], m[8] ];
+
+    m[0] = m[0]*c - m[1]*s;
+    m[4] = m[4]*c - m[5]*s;
+    m[8] = m[8]*c - m[9]*s;
+
+    m[1] = m[1]*c + t[0]*s;
+    m[5] = m[5]*c + t[1]*s;
+    m[9] = m[9]*c + t[2]*s;
+  }
+
+  function rotateX_(m, ang, beg, num, center_y, center_z) {
+    var y;
+    var z;
+    var r = ang * Math.PI / 180.0;
+    var s = Math.sin(r);
+    var c = Math.cos(r);
+    var end = 3 * (beg + num);
+
+    for (var i = 3 * beg; i < end; i += 3)
+    {
+      y = m[i + 1] - center_y; // 中心点
+      z = m[i + 2] - center_z;
+
+      m[i + 1] = y*c - z*s + center_y;
+      m[i + 2] = z*c + y*s + center_z;
+    }
+  }
+
+  function rotateY_(m, ang, beg, num, center_x, center_z) {
+    var x;
+    var z;
+    var r = ang * Math.PI / 180.0;
+    var s = Math.sin(r);
+    var c = Math.cos(r);
+    var end = 3 * (beg + num);
+
+    for (var i = 3 * beg; i < end; i += 3)
+    {
+      x = m[i + 0] - center_x; // 中心点
+      z = m[i + 2] - center_z;
+
+      m[i + 0] = x*c + z*s + center_x;
+      m[i + 2] = z*c - x*s + center_z;
+    }
+  }
+
+  function rotateZ_(m, ang, beg, num, center_x, center_y) {
+    var x;
+    var y;
+    var r = ang * Math.PI / 180.0;
+    var s = Math.sin(r);
+    var c = Math.cos(r);
+    var end = 3 * (beg + num);
+
+    for (var i = 3 * beg; i < end; i += 3)
+    {
+      x = m[i + 0] - center_x; // 中心点
+      y = m[i + 1] - center_y;
+
+      m[i + 0] = x*c - y*s + center_x;
+      m[i + 1] = y*c + x*s + center_y;
+    }
+  }
+
+  //======================== Drawing =======================
+
+  function drawing() {
+    var move_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ];
+    rotateY(move_matrix, mouse_data.a.x);
+    rotateX(move_matrix, mouse_data.a.y);
+
+    gl.uniformMatrix4fv(matrix, false, move_matrix); // 更新数据到gpu
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.clearColor(0.5, 0.5, 0.5, 0.9);
+    gl.clearDepth(1.0);
+    gl.viewport(0.0, 0.0, canvas.width, canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.drawArrays(gl.TRIANGLES, 0, vtx.length / 3);
+    gl.drawArrays(gl.POINTS, wheel.text.beg, wheel.text.len);
+
+    window.requestAnimationFrame(animate);
+  }
+
+  function animate(time) {
+    if (!mouse_data.drag) {
+      mouse_data.d.x *= .9; // 惯性力
+      mouse_data.d.y *= .9;
+      mouse_data.a.x  = (mouse_data.a.x + mouse_data.d.x) % 360;
+      mouse_data.a.y  = (mouse_data.a.y + mouse_data.d.y) % 360;
+    }
+
+    // 去重
+    if (Math.abs(mouse_data.l.x - mouse_data.a.x) <= 0.5 && Math.abs(mouse_data.l.y - mouse_data.a.y) <= 0.5) {
+      window.requestAnimationFrame(animate);
+      return;
+    }
+
+    mouse_data.l.x = mouse_data.a.x;
+    mouse_data.l.y = mouse_data.a.y;
+
+    drawing();
+  }
+
+  //========================= main =========================
+
+  init();
+  make_text_coord();
+  make_wheel_coord();
+  make_drive_coord();
+  make_obj(angle);
+  main();
+  drawing();
+  animate(0);
+
+  function next() {
+    console.clear();
+
+    for (var i = 0; i < wheel.num; i++) {
+      enc[i * 2] = (enc[i * 2] + 1) % wheel.tooth.num;
+
+      console.log(step[i][0]);
+
+      if (i == wheel.num - 1 || step[i + 1][0] == 0) {
+        enc[i * 2 + 1] = (enc[i * 2 + 1] + 1) % wheel.tooth.num;
+      }
+
+      var tmp = step[i][wheel.tooth.num - 1];
+
+      for (var j = wheel.tooth.num - 1; j > 0; j--) {
+        step[i][j] = step[i][j - 1];
+      }
+
+      step[i][0] = tmp;
+    }
+
+    angle = (angle + 360 / wheel.tooth.num) % 360;
+
+    make_obj(angle);
+
+    main();
+
+    drawing();
+  }
+
+</script>

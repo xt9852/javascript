@@ -1,0 +1,260 @@
+<title></title>
+<meta charset='utf-8'>
+<style>
+  ::-webkit-scrollbar {
+    width: 3px !important;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1) !important;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(200,0,0,0.5) !important;
+  }
+  #player svg:hover {
+    cursor:pointer;
+    opacity:0.7
+  }
+  #playlist li:hover {
+    color:#716e6e;
+    font-weight:bold;
+    border-left:3px solid #1abc9c;
+    padding:3px;
+ }
+</style>
+<video id='video' style='width:100%;height:100%' onended='onnext()'></video>
+<ol id='playlist' style='position:fixed;left:0;bottom:81;width:300;max-height:220;margin:0;padding:0;overflow:auto;background:#e1e1e1;cursor:pointer;transition:transform .5s ease;transform: translateX(-300px);'></ol>
+<div id='player' style='position:fixed;left:0;bottom:50;width:115;height:30;background:#e1e1e1;transition:transform .5s ease;'>
+  <div id='progress' style='position:absolute;left:3;top:2;width:88;height:10;cursor:ew-resize;' onmousemove='onprocess(event)'>
+    <div style='position:absolute;top:3;width:100%;height:2;background:black;'></div>
+    <div id='seek' style='position:absolute;top:3;width:0;height:2;background:red;'></div>
+  </div>
+  <svg style='position:absolute;left:3;top:15;width:10;height:10;stroke:black;stroke-width:2;fill:none' onclick='video.webkitRequestFullScreen();'>
+    <circle cx='5' cy='5' r='6'/>
+  </svg>
+  <svg style='position:absolute;left:18;top:15;width:10;height:10;stroke:black;stroke-width:2' onclick='onlist()'>
+    <path d='M 0 1 10 1 M 0 5 10 5 M 0 9 10 9'/>
+  </svg>
+  <svg style='position:absolute;left:33;top:15;width:10;height:10;stroke:black;stroke-width:2;fill:none' onclick='onrand()'>
+    <path id='rand' d='M 0 1 3 1 7 9 10 9 M 0 9 3 9 7 1 10 1' style='display:'/>
+    <circle id='order' cx='5' cy='5' r='4' style='display:none'/>
+  </svg>
+  <svg style='position:absolute;left:50;top:15;width:10;height:10;stroke:black;stroke-width:2' onclick='onlast()'>
+    <path d='M 1 0 1 10 M 10 0 10 10 3 5 Z'/>
+  </svg>
+  <svg style='position:absolute;left:65;top:15;width:10;height:10;stroke:black;stroke-width:2' onclick='onrun()'>
+    <path id='play' d='M 2 0 2 10 9 5 Z' style='display:'/>
+    <path id='pause' d='M 1 0 3 0 3 10 1 10 Z M 7 0 9 0 9 10 7 10 Z' style='display:none'/>
+  </svg>
+  <svg style='position:absolute;left:80;top:15;width:10;height:10;stroke:black;stroke-width:2' onclick='onnext()'>
+    <path d='M 9 0 9 10 M 0 0 0 10 7 5 Z'/>
+  </svg>
+  <svg style='position:absolute;right:0;width:20;height:30;fill:black;background:#1abc9c;' onclick='onopen()'>
+    <path id='arrow_left' d='M 15 3 15 27 3 15' style='display:'/>
+    <path id='arrow_right' d='M 5 3 5 27 17 15' style='display:none'/>
+  </svg>
+</div>
+<script>
+  var video       = document.getElementById('video');
+  var qplayer     = document.getElementById('qplayer');
+  var playlist    = document.getElementById('playlist');
+  var seek        = document.getElementById('seek');
+  var rand        = document.getElementById('rand');
+  var order       = document.getElementById('order');
+  var play        = document.getElementById('play');
+  var pause       = document.getElementById('pause');
+  var arrow_left  = document.getElementById('arrow_left');
+  var arrow_right = document.getElementById('arrow_right');
+  var title       = document.querySelector("title");
+
+  var path;
+  var timerId;
+  var trackId = 0;
+  var filelist = [];
+  var isPlaying = false;
+  var isRandPlay = true;
+  var isPlaylist = false;
+  var playlist_li;
+  
+  // 展开/收回列表按钮
+  function onlist(open) {
+    if (!open) { isPlaylist = !isPlaylist; }
+    playlist.style.transform = (playlist.style.transform == 'translateX(-300px)') ? 'translateX(0px)' : 'translateX(-300px)';
+  }
+
+  // 随机/顺序播放
+  function onrand() {
+    isRandPlay = !isRandPlay;
+
+    if (isRandPlay) {
+      rand.style.display = '';
+      order.style.display = 'none';
+    } else {
+      rand.style.display = 'none';
+      order.style.display = '';
+    }
+  }
+
+  // 播放列表点击
+  function onselect() {
+    if (isPlaying && trackId != this.id) {
+      switchTrack(parseInt(this.id), false);
+    }
+  }
+
+  // 播放/暂停
+  async function onrun() {
+    if (filelist.length <= 0) {
+      await getFilelist();
+      init();
+      if (filelist.length > 0) onrun();
+      return;
+    }
+
+    if (!isPlaying) {
+      video.play();
+      isPlaying = true;
+      play.style.display = 'none';
+      pause.style.display = '';
+      clearInterval(timerId);
+      timerId = setInterval(updateProgress, 1000);
+    } else {
+      video.pause();
+      isPlaying = false;
+      play.style.display = '';
+      pause.style.display = 'none';
+      clearInterval(timerId);
+    }
+  }
+
+  // 上一首
+  function onlast() {
+    if (!isPlaying) return;
+    var id = isRandPlay ? Math.round(Math.random() * filelist.length) : (trackId == 0) ? (filelist.length - 1) : (trackId - 1);
+    switchTrack(id, true);
+  }
+
+  // 下一首
+  function onnext() {
+    if (!isPlaying) return;
+    var id = isRandPlay ? Math.round(Math.random() * filelist.length) : ((trackId == filelist.length - 1) ? 0 : (trackId + 1));
+    switchTrack(id, true);
+  }
+
+  // 展开/收回按钮
+  function onopen() {
+    if (arrow_left.style.display == '') {
+      arrow_left.style.display = 'none';
+      arrow_right.style.display = '';
+      player.style.transform = 'translateX(-95px)';
+    } else {
+      arrow_left.style.display = '';
+      arrow_right.style.display = 'none';
+      player.style.transform = 'translateX(0px)';
+    }
+
+    if (isPlaylist) {
+      onlist(true);
+    }
+  }
+
+  // 拖动进度条
+  function onprocess(event) {
+    if (event.which !== 1 || !isPlaying) { return; }
+    video.currentTime = Math.round(event.offsetX / progress.offsetWidth * video.duration);
+    updateProgress();
+  }
+
+  // 更新进度条
+  function updateProgress() {
+      var min = parseInt(video.currentTime / 60)
+      var sec = parseInt(video.currentTime % 60);
+      var currentSec = sec < 10 ? ('0' + sec) : sec;
+      var track = filelist[trackId];
+
+      title.innerHTML = track.title + (track.artist?'-':'') + track.artist + '-' + min + ':' + currentSec;
+      seek.style.width = video.currentTime / video.duration * 100 + '%';
+  }
+
+  // 切换
+  function switchTrack(id, scrollTop){
+      video.pause();
+      loadTrack(id, scrollTop);
+      video.play();
+  }
+
+  // 加载
+  function loadTrack(id, scrollTop){
+      video.src = filelist[id].file;
+      video.load();
+
+      playlist_li[trackId].style['color'] = '#989898';
+      playlist_li[trackId].style['padding'] = '3px 5px';
+      playlist_li[trackId].style['font-weight'] = null;
+      playlist_li[trackId].style['border-left'] = null;
+
+      playlist_li[id].style['color'] = '#716e6e';
+      playlist_li[id].style['padding'] = '3px 5px 3px 5px';
+      playlist_li[id].style['font-weight'] = 'bold';
+      playlist_li[id].style['border-left'] = '3px solid #1abc9c';
+
+      if (scrollTop) { playlist.scrollTop = id * 22; }
+
+      trackId = id;
+  }
+
+  // 得到目录中的文件名
+  async function getFilelist() {
+    const handle = await showDirectoryPicker();
+    const iter = handle.entries();
+
+    for await (const info of iter) {
+      if (info[1].kind === 'file') { filelist.push( { file : info[0] } ); }
+    }
+
+    filelist.sort((a, b)=>a.file.localeCompare(b.file, 'zh'));
+
+    console.log(filelist);
+
+    path = prompt('请输入目录', 'file:\\\\D:\\1.play\\mp3\\');
+  }
+
+  // 初始化
+  function init() {
+    trackId = isRandPlay ? Math.round(Math.random() * filelist.length) : 0;
+
+    console.log('isPlaying:  ' + isPlaying);
+    console.log('isRandPlay: ' + isRandPlay);
+    console.log('trackId:    ' + trackId);
+    console.log('filelist:   ' + filelist.length);
+
+    // 创建列表
+    for (var i = 0; i < filelist.length; i++){
+        var item = filelist[i];
+        if (item.title == null || item.artist == null) {
+            let res = item.file.split(' - ')
+            if (res.length > 1) {
+                item.title = res[1].substr(0, res[1].length-4);
+                item.artist = res[0];
+            }
+            else {
+                item.title = res[0].substr(0, res[0].length-4);
+                item.artist = '';
+            }
+            filelist[i].file = path + filelist[i].file;
+        }
+
+        var li = document.createElement('li');
+        li.id = i;
+        li.style = 'padding:3px 5px;font-size:11px;color:#989898;list-style-position:inside';
+        li.innerHTML = '<strong style="margin-left:5px;">'+item.title+'</strong><span style="float:right">'+item.artist+'</span>';
+        li.addEventListener('click', onselect);
+        playlist.append(li);
+    }
+
+    playlist_li = document.getElementsByTagName("li");
+
+    console.log('playlist:   ' + playlist_li.length);
+
+    loadTrack(trackId, true);
+  }
+</script>
