@@ -8,15 +8,14 @@
 // @connect      obs-helf.cucloud.cn
 // @connect      github.com
 // @connect      github.io
-// @connect      17caai.com
+// @connect      17caan.com
 // @connect      88a6.cc
-// @connect      mm261.vip
-// @connect      mm144.cc
-// @connect      kkht10.vip
-// @connect      cucloud.cn
-// @connect      ht96az.vip
-// @connect      ht7ac.vip
-// @connect      htn6c.vip
+// @connect      mm262.vip
+// @connect      mm176.cc
+// @connect      kkht19.vip
+// @connect      ht100az.vip
+// @connect      ht82w.vip
+// @connect      htg2d.vip
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_listValues
@@ -32,14 +31,13 @@ var g_page_id = 0;
 var g_page_cnt = 0;
 var g_param = {
     '17' : {
-        addr : { url : 'https://fabu1.obs-helf.cucloud.cn/index.html',
-                 reg : [ /color="red">([^<]+)<\/font>/ ],
-                 res : '' },
-        menu : { url : '',
+        addr : { beg : 'https://fabu1.obs-helf.cucloud.cn/index.html',
+                 reg : [ /color="red">([^<]+)\/<\/font>/ ] },
+        menu : { uri : '',
                  reg :  /<a href="([^"]+)">\s+<div class="v-s-li-nav-link-vs_[^"]+">\s*([^<\s]+)\s*<\/div>/g,
-                 add : '',
-                 fnd : '/search/0.html?keyword={INPUT}' },
-        page : { url : '{ADDR}{URI}&page={PAGE}',
+                 fnd : '/search/0.html?keyword={INPUT}',
+                 add : '' },
+        page : { url : '{URI}&page={PAGE}',
                  img : '-xor',
                  cnt : /"last_page_p">[0-9]+\/([0-9]+)/,
                  reg : /[0-9]+"\s+data-sl="([^"]+)"[\s\S]+?"rank-title">([^<]+)/g,
@@ -47,14 +45,13 @@ var g_param = {
                }
     },
     '88' : {
-        addr : { url : 'https://v88avnetwork.github.io/88av.html',
-                 reg : [ /target="_blank">([^<]+)/ ],
-                 res : '' },
-        menu : { url : '',
+        addr : { beg : 'https://v88avnetwork.github.io/88av.html',
+                 reg : [ /target="_blank">([^<]+)/ ] },
+        menu : { uri : '',
                  reg :  /class="?nav-item"?><a\s+href="?([^">]+)"?>([^<\s]+)/g,
-                 add : '',
-                 fnd : '/search/{INPUT}' },
-        page : { url : '{ADDR}{URI}/{PAGE}',
+                 fnd : '/search/{INPUT}',
+                 add : '' },
+        page : { url : '{URI}/{PAGE}',
                  img : '-webp',
                  cnt : /data-total-page="([0-9]+)"/,
                  reg : /<img alt="([^"]+)"[\s\S]+?(https:\/\/[^\/]+\/videos\/([^\/]+)\/cover\/5_505_259[^"]+)/g,
@@ -62,32 +59,31 @@ var g_param = {
                }
     },
     'mm' : {
-        addr : { url : 'https://github.com/maomimaomiav/maomi/blob/main/README.md',
-                 reg : [ /最新地址[\s：]+(mm\d+\.vip)"/, /<meta http-equiv="refresh"[\s\S]+(https:\/\/[^\/]+)/ ],
-                 res : '' },
-        menu : { url : '/home.html',
+        addr : { beg : 'https://github.com/maomimaomiav/maomi/blob/main/README.md',
+                 reg : [ /备用地址[\s：]+(mm\d+\.vip)"/, /<meta http-equiv="refresh"[\s\S]+(https:\/\/[^\/]+)/ ] },
+        menu : { uri : '/home.html',
                  reg :  /data-href="(\/tags\/[^/]+)\/index.html" data-id="\d+"  data-onsite-or-offsite=""\s+>([^<]+)/g,
-                 add : '',
-                 fnd : '/search/{INPUT}' },
-        page : { url : '{ADDR}{URI}/{PAGE}.html',
+                 fnd : '/search/{INPUT}',
+                 add : '' },
+        page : { url : '{URI}/{PAGE}.html',
                  img : '-sub',
                  cnt : />(\d+)<\/a>\s+<[^>]+>(&#19979;&#19968;&#39029;|下一页)/,
                  reg : /data-original="(https:\/\/[^\/]+\/+(\w+\/\w+\/\w+\/[0-9a-z]+)\/cover\/cover_encry\.pip)[\s\S]*?<h3>([^<]+)/g,
-                 fnt : (ret, txt, img, m3u, i)=>{ img[i] = ret[1]; txt[i] = get_string(ret[3]); m3u[i] = 'https://zl-365play.as8k.live:8090//' + ret[2] + '/m3u8/maomi365.m3u8'; }
+                 fnt : (ret, txt, img, m3u, i)=>{ img[i] = ret[1]; txt[i] = get_string(ret[3]); m3u[i] = 'https://365play.dd99rr.live/' + ret[2] + '/m3u8/maomi365.m3u8'; }
                }
     },
     'mt' : {
-        addr : { url : 'https://github.com/htapp/htapp',
+        addr : { beg : 'https://github.com/htapp/htapp',
                  reg : [ /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/,
-                         /targetSites = \[\s+'([^']+)/,
-                         (html)=>{return /<a href="([^"]+)/.exec(html)[1] + '/ht/index.html'},
-                         /targetUrls = \[\s+"[^"]+",\s+"([^"]+)"/ ],
-                 res : '' },
-        menu : { url : '',
+                         (html)=>{var u = [], uu = /uu = '([^']+)/.exec(html)[1];
+                                  for (var j = 8; j <= uu.length; j += 4) { u.push(String.fromCharCode(parseInt(uu.toString().substr(j - 4, 4)) - 1000)); }
+                                  return u.join('')+ '/ht/index.html'; },
+                         /targetUrls = \[\s+"([^"]+)/ ] },
+        menu : { uri : '',
                  reg :  /<a href="(\/type\/[^"]+)" class="menu-link">([^<]+)/g,
-                 add : '---',
-                 fnd : '/search/{INPUT}/' },
-        page : { url : '{ADDR}{URI}{PAGE}',
+                 fnd : '/search/{INPUT}/',
+                 add : '---' },
+        page : { url : '{URI}{PAGE}',
                  img : '-xor',
                  cnt : /\[page\]', (\d+), event/,
                  reg : /<img data-original="([^"]+)[\s\S]*?<div data-original="\/\/[^/]+(\/video\/m3u8\/\d+\/\d+\/[\da-z]+)[\s\S]*?"vod-title">([^<]+)/g,
@@ -262,38 +258,56 @@ function add_video(txt, img, url, flag) {
     window.scrollTo(0, 0);
 }
 
-function cb_addr_timeout(url, xhr, arg) {
+function cb_addr_get_timeout(url, xhr, arg) {
     let id = arg.id;
-    let timeout = ++arg.times[1];
+    let times = arg.times[0];
+    let timeout = ++arg.times[2];
+
+    console.log('get', id, url, times, timeout, xhr.error ? xhr.error : 'timeout');
+
+    if (timeout >= 3) { return; }
+
+    req_data(url, cb_addr_get, arg, cb_addr_get_timeout);
+}
+
+function cb_addr_try_timeout(url, xhr, arg) {
+    let id = arg.id;
+    let times = arg.times[0];
+    let timeout = ++arg.times[2];
     let param = g_param[id];
     let addr = param.addr;
-    let old = addr.res != '';
 
-    console.log('timeout', id, timeout, 'old', old, url, xhr);
+    console.log('try', id, url, times, timeout, xhr.error ? xhr.error : 'timeout');
 
-    if (timeout < 3) {
-        req_data(url, cb_addr_new, arg, cb_addr_timeout);
+    if (/'Refused to connect to "[^"]+": This domain is not a part of the @connect list'/.exec(xhr.error)) {
         return;
     }
 
-    if (old) {
-        arg.times = [ 0, 0 ];
-        req_data(addr.url, cb_addr_new, arg, cb_addr_timeout);
-        console.log('get', id, addr.url);
+    if (timeout >= 3) {
+        if (times < 1) {
+            arg.times = [ times + 1, 0, 0 ];
+            req_data(addr.beg, cb_addr_get, arg, cb_addr_get_timeout);
+            console.log('get', id, addr.beg);
+        }
+        return;
     }
+
+    req_data(url, cb_addr_try, arg, cb_addr_try_timeout);
 }
 
-function cb_addr_new(url, xhr, arg) {
+function cb_addr_get(url, xhr, arg) {
     let id = arg.id;
     let date = arg.date;
-    let times = arg.times[0]++;
+    let times = arg.times[0];
+    let step = arg.times[1];
     let param = g_param[id];
+    let menu = param.menu;
     let addr = param.addr;
-    let reg = addr.reg[times++];
+    let reg = addr.reg[step++];
     let html = xhr.responseText;
     let data;
 
-    console.log('new', id, times, url);
+    console.log('get', id, url, times, step, 'ok');
 
     data = (typeof(reg) == 'function') ? reg(html) : reg.exec(html);
 
@@ -306,16 +320,16 @@ function cb_addr_new(url, xhr, arg) {
         data = (data[1].substring(0, 8) != 'https://') ? ('https://' + data[1]) : data[1];
     }
 
-    if (times < addr.reg.length) {
-        req_data(data, cb_addr_new, arg);
+    if (step < addr.reg.length) {
+        arg.times = [ times, step, 0 ];
+        req_data(data, cb_addr_get, arg, cb_addr_get_timeout);
     } else {
-        g_param[id].addr.res = data;
-        GM_setValue(id, { date : date, addr : data });
-        console.log('new', GM_getValue(id));
+        g_param[id].addr.url = data;
+        req_data(data + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
     }
 }
 
-function cb_addr_old(url, xhr, arg) {
+function cb_addr_try(url, xhr, arg) {
     let id = arg.id;
     let date = arg.date;
     let param = g_param[id];
@@ -333,7 +347,6 @@ function cb_addr_old(url, xhr, arg) {
         return;
     }
 
-
     let data = [ { uri : fnd, title : '查找' } ];
 
     for (let i = 1; (ret = reg.exec(html)) !== null; i++) {
@@ -341,13 +354,13 @@ function cb_addr_old(url, xhr, arg) {
     }
 
     if (data.length == 1) {
-        console.log(id, html);
+        console.log('menu', id, html);
         return;
     }
 
     add_menu(id, data);
 
-    GM_setValue(id, { date : date, addr : addr.res, menu : data });
+    GM_setValue(id, { date : date, addr : addr.url, menu : data });
 
     console.log('set', id, GM_getValue(id));
 }
@@ -356,19 +369,20 @@ function get_addr(id) {
     let param = g_param[id];
     let addr = param.addr;
     let menu = param.menu;
+    let page = param.page;
     let old = GM_getValue(id);
     let now = new Date().toLocaleDateString();
-    let arg = { id : id, date : now, times : [0, 0] };
+    let arg = { id : id, date : now, times : [0, 0, 0] };
 
-    if (old == undefined) {
-        req_data(addr.url, cb_addr_new, arg, cb_addr_timeout);
-        console.log('get', id, addr.url);
+    if (!old) {
+        req_data(addr.beg, cb_addr_get, arg, cb_addr_get_timeout);
+        console.log('get', id, addr.beg);
     } else if (old.date != now || null == old.menu) {
-        addr.res = old.addr;
-        req_data(old.addr + menu.url, cb_addr_old, arg, cb_addr_timeout);
-        console.log('try', id, old.addr);
+        g_param[id].addr.url = old.addr;
+        req_data(old.addr + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
+        console.log('try', id, old.addr + menu.uri);
     } else {
-        addr.res = old.addr;
+        page.url = old.addr + page.url;
         add_menu(id, old.menu);
         console.log('use', id, old.addr);
     }
@@ -404,12 +418,9 @@ function cb_page(url, xhr, arg) {
 
 function get_page(is_cnt) {
     let param = g_param[g_id];
-    let addr = param.addr;
     let page = param.page;
-    let res = addr.res;
     let url = page.url;
     url = url.replace('{URI}', g_uri);
-    url = url.replace('{ADDR}', res);
     url = url.replace('{PAGE}', g_page_id + 1);
     req_data(url, cb_page, { id: g_id, is_cnt :is_cnt });
 }
@@ -467,6 +478,7 @@ function main() {
     //GM_deleteValue('mm');
     //GM_deleteValue('mt');
 
+    /*
     let value = GM_listValues();
 
     if (value) {
@@ -476,6 +488,7 @@ function main() {
     for (let i in value) {
         console.log(value[i], GM_getValue(value[i]));
     }
+    */
 
     let body = document.createElement('body');
     body.style = 'margin:0;';
