@@ -75,9 +75,9 @@ var g_param = {
     'mt' : {
         addr : { beg : 'https://github.com/htapp/htapp',
                  reg : [ /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/,
-                         (html)=>{var u = [], uu = /uu = '([^']+)/.exec(html)[1];
-                                  for (var j = 8; j <= uu.length; j += 4) { u.push(String.fromCharCode(parseInt(uu.toString().substr(j - 4, 4)) - 1000)); }
-                                  return u.join('')+ '/ht/index.html'; },
+                         (html)=>{var u = [], uu = /uu = '(\d+)/.exec(html)[1];
+                                  for (var j = 4; j < uu.length; j += 4) { u.push(String.fromCharCode(parseInt(uu.substr(j, 4)) - 1000)); }
+                                  return u.join('') + '/ht/index.html'; },
                          /targetUrls = \[\s+"([^"]+)/ ] },
         menu : { uri : '',
                  reg :  /<a href="(\/type\/[^"]+)" class="menu-link">([^<]+)/g,
