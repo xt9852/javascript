@@ -15,7 +15,7 @@
 // @connect      kkht19.vip
 // @connect      ht100az.vip
 // @connect      ht82w.vip
-// @connect      htg2d.vip
+// @connect      htq5y.vip
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_listValues
@@ -494,20 +494,8 @@ function main() {
     body.style = 'margin:0;';
     document.body = body;
 
-    let select = document.createElement('select');
-    select.id = 'menu';
-    select.style = 'position:fixed; right:0px; margin:3px;';
-    select.onchange = on_change;
-    document.body.appendChild(select);
-
-    let input = document.createElement('input');
-    input.id = 'input';
-    input.style = 'position:fixed; right:100px; margin-top:2px;';
-    input.onkeydown = () => { if (event.keyCode == 13) on_change(true); };
-    document.body.appendChild(input);
-
     let div = document.createElement('div');
-    div.style = 'position:fixed; right:285px;';
+    div.style = 'position:fixed; right:0px;';
     document.body.appendChild(div);
 
     let a = document.createElement('a');
@@ -527,15 +515,23 @@ function main() {
     a.onclick = on_button_page_next;
     div.appendChild(a);
 
+    let input = document.createElement('input');
+    input.id = 'input';
+    input.onkeydown = () => { if (event.keyCode == 13) on_change(true); };
+    div.appendChild(input);
+
+    let select = document.createElement('select');
+    select.id = 'menu';
+    select.onchange = on_change;
+    div.appendChild(select);
+
     div = document.createElement('div');
     div.id = 'content';
     document.body.appendChild(div);
 
     add_menu('m3', [{ title : '播放', uri : '{INPUT}' }]);
 
-    for (let id in g_param) {
-        get_addr(id);
-    }
+    for (let id in g_param) { get_addr(id); }
 }
 
 main();
