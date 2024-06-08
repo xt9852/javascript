@@ -10,11 +10,11 @@
 // @connect      github.io
 // @connect      17caan.com
 // @connect      88a6.cc
-// @connect      mm262.vip
-// @connect      mm176.cc
-// @connect      kkht19.vip
+// @connect      mm179.cc
+// @connect      mm191.cc
+// @connect      kkht20.vip
 // @connect      ht100az.vip
-// @connect      ht82w.vip
+// @connect      htg2d.vip
 // @connect      htq5y.vip
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -25,7 +25,7 @@
 
 var g_hls = null;
 var g_video = null;
-var g_id = 'm3';
+var g_id = '';
 var g_uri = '';
 var g_page_id = 0;
 var g_page_cnt = 0;
@@ -34,7 +34,7 @@ var g_param = {
         addr : { beg : 'https://fabu1.obs-helf.cucloud.cn/index.html',
                  reg : [ /color="red">([^<]+)\/<\/font>/ ] },
         menu : { uri : '',
-                 reg :  /<a href="([^"]+)">\s+<div class="v-s-li-nav-link-vs_[^"]+">\s*([^<\s]+)\s*<\/div>/g,
+                 reg :  /<a href="(\/category[^"]+)">\s+<div class="v-s-li-nav-link-vs_[^"]+">\s*([^<\s]+)\s*<\/div>/g,
                  fnd : '/search/0.html?keyword={INPUT}',
                  add : '' },
         page : { url : '{URI}&page={PAGE}',
@@ -60,14 +60,14 @@ var g_param = {
     },
     'mm' : {
         addr : { beg : 'https://github.com/maomimaomiav/maomi/blob/main/README.md',
-                 reg : [ /备用地址[\s：]+(mm\d+\.vip)"/, /<meta http-equiv="refresh"[\s\S]+(https:\/\/[^\/]+)/ ] },
+                 reg : [ /\[(mm.*?)\]/, /<meta http-equiv="refresh"[\s\S]+(https:\/\/[^\/]+)/ ] },
         menu : { uri : '/home.html',
                  reg :  /data-href="(\/tags\/[^/]+)\/index.html" data-id="\d+"  data-onsite-or-offsite=""\s+>([^<]+)/g,
                  fnd : '/search/{INPUT}',
                  add : '' },
         page : { url : '{URI}/{PAGE}.html',
                  img : '-sub',
-                 cnt : />(\d+)<\/a>\s+<[^>]+>(&#19979;&#19968;&#39029;|下一页)/,
+                 cnt : />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/,
                  reg : /data-original="(https:\/\/[^\/]+\/+(\w+\/\w+\/\w+\/[0-9a-z]+)\/cover\/cover_encry\.pip)[\s\S]*?<h3>([^<]+)/g,
                  fnt : (ret, txt, img, m3u, i)=>{ img[i] = ret[1]; txt[i] = get_string(ret[3]); m3u[i] = 'https://365play.dd99rr.live/' + ret[2] + '/m3u8/maomi365.m3u8'; }
                }
@@ -75,9 +75,9 @@ var g_param = {
     'mt' : {
         addr : { beg : 'https://github.com/htapp/htapp',
                  reg : [ /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/,
-                         (html)=>{var u = [], uu = /uu = '(\d+)/.exec(html)[1];
-                                  for (var j = 4; j < uu.length; j += 4) { u.push(String.fromCharCode(parseInt(uu.substr(j, 4)) - 1000)); }
-                                  return u.join('') + '/ht/index.html'; },
+                         (html)=>{ let url = '', uu = /uu = '(\d+)/.exec(html)[1];
+                                   for (let j = 4; j < uu.length; j += 4) { url += (String.fromCharCode(parseInt(uu.substr(j, 4)) - 1000)); }
+                                   return url + '/ht/index.html'; },
                          /targetUrls = \[\s+"([^"]+)/ ] },
         menu : { uri : '',
                  reg :  /<a href="(\/type\/[^"]+)" class="menu-link">([^<]+)/g,
@@ -217,7 +217,7 @@ function add_menu(id, data) {
     let select = document.getElementById('menu');
 
     let optgroup = document.createElement('optgroup');
-    optgroup.id = id;
+    optgroup.id = select.options.length;
     optgroup.label = id;
     select.appendChild(optgroup);
 
@@ -307,18 +307,20 @@ function cb_addr_get(url, xhr, arg) {
     let html = xhr.responseText;
     let data;
 
-    console.log('get', id, url, times, step, 'ok');
+    if (typeof(reg) == 'function') {
+        data = reg(html);
+    } else {
+        data = reg.exec(html);
 
-    data = (typeof(reg) == 'function') ? reg(html) : reg.exec(html);
+        if (data == null) {
+            console.log('error', reg, html);
+            return;
+        }
 
-    if (data == null) {
-        console.log('error', reg, html);
-        return;
+        data = (data[1][0] != 'h' || data[1][1] != 't' || data[1][2] != 't' || data[1][3] != 'p' || data[1][4] != 's') ? 'https://' + data[1] : data[1];
     }
 
-    if (typeof(reg) != 'function') {
-        data = (data[1].substring(0, 8) != 'https://') ? ('https://' + data[1]) : data[1];
-    }
+    console.log('get', id, url, times, step, data);
 
     if (step < addr.reg.length) {
         arg.times = [ times, step, 0 ];
@@ -342,12 +344,12 @@ function cb_addr_try(url, xhr, arg) {
     let ret;
 
     if ((ret = /"refresh"[\s\S]+(https:\/\/[^\/]+)/.exec(html)) || (ret = /targetSites = \[\s+'([^']+)/.exec(html))) {
-        GM_setValue(id, { date : date, addr : ret[1] });
-        console.log('ref', id, GM_getValue(id));
+        console.log('ref', id, ret[1]);
+        req_data(ret[1], cb_addr_try, arg, cb_addr_try_timeout);
         return;
     }
 
-    let data = [ { uri : fnd, title : '查找' } ];
+    let data = [ { uri : fnd, title : 'find' } ];
 
     for (let i = 1; (ret = reg.exec(html)) !== null; i++) {
         data[i] = { uri : get_string(ret[1]) + add, title : get_string(ret[2]) };
@@ -390,7 +392,8 @@ function get_addr(id) {
 
 function cb_page(url, xhr, arg) {
     let id = arg.id;
-    let is_cnt = arg.is_cnt;
+    let page_id = arg.page_id;
+    let get_cnt = arg.get_cnt;
     let param = g_param[id];
     let page = param.page;
     let reg = page.reg;
@@ -402,27 +405,29 @@ function cb_page(url, xhr, arg) {
     let m3u = [];
     let ret;
 
-    if (is_cnt) {
+    if (get_cnt) {
         ret = cnt.exec(html);
         g_page_cnt = (ret == null) ? 0 : ret[1];
     }
-
-    document.getElementById('page_num').innerText = g_page_id + '/' + g_page_cnt;
 
     for (let i = 0; ret = reg.exec(html); i++) {
         page.fnt(ret, txt, img, m3u, i);
     }
 
     add_video(txt, img, m3u, page.img);
+
+    document.getElementById('page_num').innerText = page_id + '/' + g_page_cnt;
+
+    g_page_id = page_id;
 }
 
-function get_page(is_cnt) {
+function get_page(page_id, get_cnt) {
     let param = g_param[g_id];
     let page = param.page;
     let url = page.url;
     url = url.replace('{URI}', g_uri);
-    url = url.replace('{PAGE}', g_page_id + 1);
-    req_data(url, cb_page, { id: g_id, is_cnt :is_cnt });
+    url = url.replace('{PAGE}', page_id + 1);
+    req_data(url, cb_page, { id: g_id, page_id : page_id, get_cnt :get_cnt });
 }
 
 function on_change(keydown) {
@@ -430,46 +435,52 @@ function on_change(keydown) {
     let input = document.getElementById('input');
     let option = menu.options[menu.selectedIndex];
     let title = option.innerText;
-    let is_cnt = true;
-    let is_num = (keydown == true && /^\d+$/.exec(input.value));
+    let parent = option.parentNode;
+    let find_id = parent.id;
+    let page_id;
+    let get_cnt;
 
-    g_id = option.parentNode.id;
+    g_id = parent.label;
 
-    if (title == '播放') {
+    if (title == 'play') {
         add_video([input.value], [''], [input.value], ['']);
         input.value = '';
         return;
     }
 
-    if (is_num) {
-        g_page_id = Number(input.value);
-        is_cnt = false;
+    if (keydown) {
+        if (/^\d+$/.exec(input.value)) {
+            page_id = Number(input.value);
+            get_cnt = false;
+        } else {
+            page_id = 0;
+            get_cnt = true;
+            g_uri = menu.options[find_id].value.replace('{INPUT}', input.value);
+            menu.selectedIndex = find_id;
+        }
     } else {
-        g_uri = menu.value.replace('{INPUT}', input.value);
-        g_page_id = 0;
+        if (title == 'find') {
+            page_id = 0;
+            get_cnt = true;
+            g_uri = menu.value.replace('{INPUT}', input.value);
+        } else {
+            page_id = 0;
+            get_cnt = true;
+            g_uri = menu.value;
+        }
     }
 
-    input.value = '';
+    console.log(g_id, g_uri, page_id);
 
-    get_page(is_cnt);
-
-    console.log(g_id, g_uri, g_page_id);
+    get_page(page_id, get_cnt);
 }
 
 function on_button_page_pre() {
-    g_page_id = ((g_page_id == 0) ? g_page_cnt : g_page_id) - 1;
-
-    document.getElementById('page_num').innerText = g_page_id + '/' + g_page_cnt;
-
-    get_page(false);
+    get_page(((g_page_id == 0) ? g_page_cnt : g_page_id) - 1, false);
 }
 
 function on_button_page_next() {
-    g_page_id = (g_page_id == g_page_cnt - 1) ? 0 : (g_page_id + 1);
-
-    document.getElementById('page_num').innerText = g_page_id + '/' + g_page_cnt;
-
-    get_page(false);
+    get_page((g_page_id == g_page_cnt - 1) ? 0 : (g_page_id + 1), false);
 }
 
 function main() {
@@ -478,21 +489,7 @@ function main() {
     //GM_deleteValue('mm');
     //GM_deleteValue('mt');
 
-    /*
-    let value = GM_listValues();
-
-    if (value) {
-        value.sort((a, b)=>a.localeCompare(b, 'zh'));
-    }
-
-    for (let i in value) {
-        console.log(value[i], GM_getValue(value[i]));
-    }
-    */
-
-    let body = document.createElement('body');
-    body.style = 'margin:0;';
-    document.body = body;
+    document.body = document.createElement('body');
 
     let div = document.createElement('div');
     div.style = 'position:fixed; right:0px;';
@@ -517,19 +514,19 @@ function main() {
 
     let input = document.createElement('input');
     input.id = 'input';
-    input.onkeydown = () => { if (event.keyCode == 13) on_change(true); };
+    input.onkeydown = ()=>{ if (event.keyCode == 13) on_change(true); }
     div.appendChild(input);
 
     let select = document.createElement('select');
     select.id = 'menu';
-    select.onchange = on_change;
+    select.onchange = ()=>{ on_change(false); }
     div.appendChild(select);
 
     div = document.createElement('div');
     div.id = 'content';
     document.body.appendChild(div);
 
-    add_menu('m3', [{ title : '播放', uri : '{INPUT}' }]);
+    add_menu('m3', [{ title : 'play', uri : '{INPUT}' }]);
 
     for (let id in g_param) { get_addr(id); }
 }
