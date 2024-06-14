@@ -8,14 +8,13 @@
 // @connect      obs-helf.cucloud.cn
 // @connect      github.com
 // @connect      github.io
-// @connect      17caan.com
+// @connect      17caao.com
 // @connect      88a6.cc
 // @connect      mm179.cc
-// @connect      mm191.cc
-// @connect      kkht20.vip
-// @connect      ht100az.vip
-// @connect      htg2d.vip
-// @connect      htq5y.vip
+// @connect      mm205.cc
+// @connect      kkht25.vip
+// @connect      ht9fi.vip
+// @connect      htz4x.vip
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_listValues
@@ -32,7 +31,7 @@ var g_page_cnt = 0;
 var g_param = {
     '17' : {
         addr : { beg : 'https://fabu1.obs-helf.cucloud.cn/index.html',
-                 reg : [ /color="red">([^<]+)\/<\/font>/ ] },
+                 reg : [ /color="red">([^<]+)\/<\/font><\/p>/ ] },
         menu : { uri : '',
                  reg :  /<a href="(\/category[^"]+)">\s+<div class="v-s-li-nav-link-vs_[^"]+">\s*([^<\s]+)\s*<\/div>/g,
                  fnd : '/search/0.html?keyword={INPUT}',
@@ -76,7 +75,7 @@ var g_param = {
         addr : { beg : 'https://github.com/htapp/htapp',
                  reg : [ /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/,
                          (html)=>{ let url = '', uu = /uu = '(\d+)/.exec(html)[1];
-                                   for (let j = 4; j < uu.length; j += 4) { url += (String.fromCharCode(parseInt(uu.substr(j, 4)) - 1000)); }
+                                   for (let j = 0; j < uu.length; j += 4) { url += (String.fromCharCode(parseInt(uu.substr(j, 4)) - 1000)); }
                                    return url + '/ht/index.html'; },
                          /targetUrls = \[\s+"([^"]+)/ ] },
         menu : { uri : '',
@@ -344,8 +343,9 @@ function cb_addr_try(url, xhr, arg) {
     let ret;
 
     if ((ret = /"refresh"[\s\S]+(https:\/\/[^\/]+)/.exec(html)) || (ret = /targetSites = \[\s+'([^']+)/.exec(html))) {
-        console.log('ref', id, ret[1]);
-        req_data(ret[1], cb_addr_try, arg, cb_addr_try_timeout);
+        console.log('ref', id, ret[1] + menu.uri);
+        g_param[id].addr.url = ret[1];
+        req_data(ret[1] + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
         return;
     }
 
