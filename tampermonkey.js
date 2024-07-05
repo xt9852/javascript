@@ -452,7 +452,7 @@ function on_change(keydown) {
     g_id = parent.label;
 
     if (title == 'play') {
-        add_video([input.value], [''], [input.value], ['']);
+        add_video([input.value, '', input.value], '');
         input.value = '';
         return;
     }
