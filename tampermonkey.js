@@ -11,10 +11,11 @@
 // @connect      88a6.cc
 // @connect      github.com
 // @connect      mm179.cc
-// @connect      mm253.cc
-// @connect      kkht31.vip
-// @connect      htivr.vip
-// @connect      htoju.vip
+// @connect      mm256.cc
+// @connect      kkht32.vip
+// @connect      htpdo.vip
+// @connect      ht27x.vip
+// @connect      ht27u.vip
 // @connect      134.122.173.8
 // @connect      dxj5566.com
 // @connect      ccdata.7wzx9.com
@@ -32,62 +33,81 @@ var g_uri = '';
 var g_page_id = 0;
 var g_page_cnt = 0;
 var g_param = {
-    17 : { addr : { beg : 'https://fabu1.obs-helf.cucloud.cn/index.html',
-                    reg : [ /color="red">([^<]+)\/<\/font><\/p>/ ] },
-           menu : { uri : '',
-                    reg :  /href="(\/category.+?)">\s+<div class="v-s-li-nav-link-vs_.+?">\s*([^<\s]+)\s*<\/div>/g,
-                    fnd : '/search/0.html?keyword={INPUT}' },
-           page : { url : '{URI}&page={PAGE}',
-                    img : '-xor',
-                    cnt : /"last_page_p">[0-9]+\/([0-9]+)/,
-                    reg : /data-src=".{45}.+?(?=&#47;)(&#47;&#118;.+?)"[\s\S]+?"rank-title">(.+?)</g,
-                    fnt : (ret, data)=>{ let img = 'https://mcealpr.xn--viq4cv52gw2nsuk.com' + get_str(ret[1]); data.push(get_str(ret[2]), img, img.replace('vod_en.jpg', 'index.m3u8')); }}},
-    88 : { addr : { beg : 'https://v88avnetwork.github.io/88av.html',
-                    reg : [ /target="_blank">([^<]+)/ ] },
-           menu : { uri : '',
-                    reg :  /class="?nav-item"?><a\s+href="?([^">]+)"?>([^<\s]+)/g,
-                    fnd : '/search/{INPUT}' },
-           page : { url : '{URI}/{PAGE}',
-                    img : '-webp',
-                    cnt : /data-total-page="([0-9]+)"/,
-                    reg : /<img alt="([^"]+)"[\s\S]+?(https:\/\/[^\/]+\/videos\/([^\/]+)\/cover\/5_505_259[^"]+)/g,
-                      fnt : (ret, data)=>{ data.push(ret[1], ret[2], 'https://zgtscy.com/videos/' + ret[3] + '/g.m3u8?h=eafeb8148cf1a15'); }}},
-    mm : { addr : { beg : 'https://github.com/maomimaomiav/maomi/blob/main/README.md',
-                    reg : [ (html)=>{ return 'https://' + /\[(mm.+?)\]/.exec(html)[1]; }, /http-equiv="refresh"[\s\S]+(https:\/\/.+?)"/ ] },
-           menu : { uri : '/home.html',
-                    reg :  /data-href="(\/tags\/.+?)\/index.html".+?data-onsite-or-offsite=""\s+>(.+?)</g,
-                    fnd : '/search/{INPUT}' },
-           page : { url : '{URI}/{PAGE}.html',
-                    img : '-sub',
-                    cnt : />(\d+)<\/a>\s+<[^>]+>&#19979;&#19968;&#39029;/,
-                    reg : /data-original="(https:\/\/[^\/]+\/+(\w+\/\w+\/\w+\/[0-9a-z]+)\/cover\/cover_encry\.pip)[\s\S]*?<h3>([^<]+)/g,
-                    fnt : (ret, data)=>{ data.push(get_str(ret[3]), ret[1], 'https://365play.dd99rr.live/' + ret[2] + '/m3u8/maomi365.m3u8'); }}},
-    mt : { addr : { beg : 'https://github.com/htapp/htapp',
-                    reg : [ (html)=>{ return 'https://' + /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/.exec(html)[1]; },
-                            (html)=>{ let url = '', uu = /uu = '(\d+)/.exec(html)[1]; for (let j = 0; j < uu.length; j += 4) { url += (String.fromCharCode(parseInt(uu.substr(j, 4)) - 1000)); } return url + '/ht/index.html'; },
-                            /targetUrls = \[\s+"([^"]+)/ ] },
-           menu : { uri : '',
-                    reg : (html)=>{ let menu = [], ret; while(ret = /href="(\/type\/[^"]+)" class="menu-link">([^<]+)/g.exec(html)) { menu.push({ uri : get_str(ret[1]) + '---', title : get_str(ret[2]) }); } return menu; },
-                    fnd : '/search/{INPUT}/' },
-           page : { url : '{URI}{PAGE}',
-                    img : '-xor',
-                    cnt : /\[page\]', (\d+), event/,
-                    reg : /<img data-original="([^"]+)[\s\S]*?<div data-original="\/\/[^/]+(\/video\/m3u8\/\d+\/\d+\/[\da-z]+)[\s\S]*?"vod-title">([^<]+)/g,
-                    fnt : (ret, data)=>{ data.push(ret[3], ret[1], 'https://ww.huangke10.cn' + ret[2] + '/CDN/index.m3u8'); }}},
-    xj : { addr : { beg : 'https://134.122.173.8:8083/dxjgg/abs.js',
-                    reg : [ (html)=>{ return 'https://www.' + /domainNames = \[".+?","(.+?)"/.exec(html)[1] + '/js/base41.js'; }, /"(https:\/\/.+?)\/forward"/ ] },
-           menu : { uri : '/getDataInit',
-                    pst : JSON.stringify({name: "John", age: 31, city: "New York"}),
-                    reg : (html)=>{ let ret = [], res = JSON.parse(html); g_param.xj.vod = res.data.macVodLinkMap; for (let i = 0; i < 3; i++) { for (let j in res.data.menu0ListMap[i].menu2List) { let menu = res.data.menu0ListMap[i].menu2List[j]; ret.push({uri : '{"typeId":'+menu.typeId2+',"content":""}', title : menu.typeName2 }); }} return ret; },
-                    fnd : '{"typeId":0,"content":"{INPUT}"}' },
-           page : { url : '/forward',
-                    img : '',
-                    cnt : /"pageAllNumber":(\d+)/,
-                    reg : /vod_pic":"https:\/\/.+?(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).*?vod_name":"(.+?)".*?"vod_server_id":(\d+)/g,
-                    fnt : (ret, data)=>{ let vod = g_param.xj.vod[ret[3]]; data.push(ret[2], vod.PIC_LINK_1 + ret[1] + '1.jpg', vod.LINK_1 + ret[1] + 'playlist.m3u8'); }}},
-};
+17 : {
+addr : {
+ beg : 'https://fabu1.obs-helf.cucloud.cn/index.html',
+ reg : [ /color="red">([^<]+)\/<\/font><\/p>/ ]},
+menu : {
+ uri : '',
+ reg :  /href="(\/category.+?)">[\s\S]+?(&#.+?;)\s+<\/div>/g,
+ fnd : '/search/0.html?keyword={INPUT}' },
+page : {
+ url : '{ADDR}{URI}&page={PAGE}',
+ img : '-xor',
+ cnt : />\d+\/(\d+)</,
+ reg : /((&#47;&#118;|\/v).+?)(&#118;&#111;&#100;|vod)[\s\S]+?rank-title">(.+?)</g,
+ fnt : (reg)=>{ let url = 'https://mcealpr.xn--viq4cv52gw2nsuk.com' + get_str(reg[1]); return [get_str(reg[4]), url + 'vod_en.jpg', url + 'index.m3u8']; }}},
+88 : {
+addr : {
+ beg : 'https://v88avnetwork.github.io/88av.html',
+ reg : [ /"_blank">([^<]+)/ ]},
+menu : {
+ uri : '',
+ reg :  /"?nav-item"?><a\s+href="?([^">]+)"?>([^<\s]+)/g,
+ fnd : '/search/{INPUT}' },
+page : {
+ url : '{ADDR}{URI}/{PAGE}',
+ img : '-webp',
+ cnt : /data-total-page="([0-9]+)"/,
+ reg : /<img alt="(.+?)".+?(https:\/\/.+?\/videos(\/.+?\/)cover\/5_505_259.+?)"/g,
+ fnt : (reg)=>{ return [reg[1], reg[2], 'https://zgtscy.com/videos' + reg[3] + 'g.m3u8?h=eafeb8148cf1a15']; }}},
+mm : {
+addr : {
+ beg : 'https://github.com/maomimaomiav/maomi/blob/main/README.md',
+ reg : [ (html)=>{ return 'https://' + /\[(mm.+?)\]/.exec(html)[1]; }, /refresh[\s\S]+(https:\/\/.+?)"/ ]},
+menu : {
+ uri : '/search/ca',
+ reg :  /(\/tags\/.+?)\/index.html.+?data-onsite-or-offsite=""\s+>(.+?)</g,
+ fnd : '/search/{INPUT}' },
+page : {
+ url : '{ADDR}{URI}/{PAGE}.html',
+ img : '-sub',
+ cnt : />(\d+)<\/a>\s+<.+?>&#19979;&#19968;&#39029;/,
+ reg : /data-original="(https:\/\/.+?(\/.+?\/)cover\/cover_encry\.pip)[\s\S]*?<h3>([^<]+)/g,
+ fnt : (reg)=>{ return [get_str(reg[3]), reg[1], 'https://365play.dd99rr.live' + reg[2] + 'm3u8/maomi365.m3u8']; }}},
+mt : {
+addr : {
+ beg : 'https://github.com/htapp/htapp',
+ reg : [ (html)=>{ return 'https://' + /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/.exec(html)[1]; },
+         (html)=>{ let u = /'(\d+)/.exec(html)[1], url = '', j = 0; for (; j < u.length; j += 4) url += String.fromCharCode(u.substr(j, 4) - 1000); return url + '/ht/index.html'; },
+         /targetUrls = \[\s+"([^"]+)/ ]},
+menu : {
+ uri : '',
+ reg : /href="(\/type\/(?!game)(?!chigua)(?!nvyou).+?)" class="menu-link">(.+?)</g,
+ fnd : '/search/{INPUT}/' },
+page : {
+ url : '{ADDR}{URI}---{PAGE}',
+ img : '-xor',
+ cnt : /\[page\]', (\d+), event/,
+ reg : /<img data-original="(.+?)".+?(\/video\/m3u8\/\d+\/\d+\/[\da-z]+\/).+?vod-title">(.+?)</g,
+ fnt : (reg)=>{ return [reg[3], reg[1], 'https://ww.huangke10.cn' + reg[2] + 'CDN/index.m3u8']; }}},
+xj : {
+addr : {
+ beg : 'https://134.122.173.8:8083/dxjgg/abs.js',
+ reg : [ (html)=>{ return 'https://www.' + /domainNames = \[".+?","(.+?)"/.exec(html)[1] + '/js/base41.js'; }, /"(https:\/\/.+?)\/forward"/ ]},
+menu : {
+ uri : '/getDataInit',
+ pst : JSON.stringify({name: "John", age: 31, city: "New York"}),
+ reg : (html)=>{ let ret = [], res = JSON.parse(html); g_param.xj.vod = res.data.macVodLinkMap; for (let i = 0; i < 3; i++) for (let j in res.data.menu0ListMap[i].menu2List) { let m = res.data.menu0ListMap[i].menu2List[j]; ret.push({uri : '{"typeId":'+m.typeId2+',"content":""}', title : m.typeName2}); } return ret; },
+ fnd : '{"typeId":0,"content":"{INPUT}"}' },
+page : {
+ url : '{ADDR}/forward',
+ img : '',
+ cnt : /"pageAllNumber":(\d+)/,
+ reg : /(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?vod_name":"(.+?)".+?vod_server_id":(\d+)/g,
+ fnt : (reg)=>{ let vod = g_param.xj.vod[reg[3]]; return [reg[2], vod.PIC_LINK_1 + reg[1] + '1.jpg', vod.LINK_1 + reg[1] + 'playlist.m3u8']; }}}};
 
-function play_m3u8() {
+function on_play() {
     if (g_video == this) {
         return;
     } else if (g_video != null) {
@@ -104,18 +124,15 @@ function play_m3u8() {
     g_hls = new Hls({ id : this.id });
     g_hls.attachMedia(this);
     g_hls.loadSource(this.id);
-
-    g_hls.on(Hls.Events.MANIFEST_PARSED, function() {
-        g_video.play();
-    });
+    g_hls.on(Hls.Events.MANIFEST_PARSED, function(){ g_video.play(); });
 }
 
 function run_lozad() {
     function decode(data, beg, xor) {
-        let binary = '';
-        let bytes = new Uint8Array(data);
-        for (let i = beg; i < bytes.byteLength; i++) { binary += String.fromCharCode(xor ? bytes[i] ^ xor : bytes[i]); }
-        return 'data:image/jpeg;base64,' + window.btoa(binary);
+        let bin = [];
+        data = new Uint8Array(data);
+        for (let i = beg; i < data.byteLength; i++) { bin += String.fromCharCode(xor ? data[i] ^ xor : data[i]); }
+        return 'data:image/jpeg;base64,' + window.btoa(bin);
     }
 
     function get_img(addr, element, fnt, beg, xor) {
@@ -169,7 +186,7 @@ function get_str(str) {
 }
 
 function get_data(url, cb_load, arg, cb_timeout) {
-    //console.log('req', url);
+    //console.log('get', url);
 
     GM_xmlhttpRequest({
         url : url,
@@ -243,7 +260,7 @@ function add_video(data, flag) {
 
         video = document.createElement('video');
         video.id = data[i + 2];
-        video.onclick = play_m3u8;
+        video.onclick = on_play;
         video.style = 'cursor:pointer;background:black;max-width:100%;max-height:500px';
         video.setAttribute('class', 'lozad');
         video.setAttribute('img' + flag, data[i + 1]);
@@ -253,10 +270,6 @@ function add_video(data, flag) {
     run_lozad();
 
     window.scrollTo(0, 0);
-}
-
-function set_page_id() {
-    document.getElementById('page_num').innerText = g_page_id + '/' + g_page_cnt;
 }
 
 function cb_addr_get_timeout(url, xhr, arg) {
@@ -280,9 +293,7 @@ function cb_addr_try_timeout(url, xhr, arg) {
 
     console.log('try', id, url, times, timeout, xhr.error ? xhr.error : 'timeout');
 
-    if (/'Refused to connect to "[^"]+": This domain is not a part of the @connect list'/.exec(xhr.error)) {
-        return;
-    }
+    if (/'Refused to connect to "[^"]+": This domain is not a part of the @connect list'/.exec(xhr.error)) { return; }
 
     if (timeout >= 3) {
         if (times < 1) {
@@ -336,7 +347,7 @@ function cb_addr_try(url, xhr, arg) {
     let ret;
 
     if ((ret = /"refresh"[\s\S]+(https:\/\/[^"\/]+)/.exec(html)) || (ret = /targetSites = \[\s+'([^']+)/.exec(html))) {
-        console.log('ref', id, ret[1] + menu.uri, html);
+        console.log('ref', id, ret[1] + menu.uri);
         g_param[id].addr.url = ret[1];
         get_data(ret[1] + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
         return;
@@ -345,11 +356,9 @@ function cb_addr_try(url, xhr, arg) {
     let data = [ { uri : fnd, title : 'find' } ];
 
     if (typeof(reg) == 'function') {
-        data = data.concat(reg(html));
+        data.push(...reg(html));
     } else {
-        for (let i = 1; (ret = reg.exec(html)) !== null; i++) {
-            data[i] = { uri : get_str(ret[1]), title : get_str(ret[2]) };
-        }
+        while (ret = reg.exec(html)) { data.push({ uri : get_str(ret[1]), title : get_str(ret[2]) }); }
     }
 
     if (data.length == 1) {
@@ -357,7 +366,7 @@ function cb_addr_try(url, xhr, arg) {
         return;
     }
 
-    page.url = addr.url + page.url;
+    page.url = page.url.replace('{ADDR}', addr.url);
 
     add_menu(id, data);
 
@@ -379,7 +388,7 @@ function get_addr(id) {
         get_data(addr.beg, cb_addr_get, arg, cb_addr_get_timeout);
         console.log('get', id, addr.beg);
     } else if (old.date == now) {
-        page.url = old.addr + page.url;
+        page.url = page.url.replace('{ADDR}', old.addr);
         param.vod = old.vod;
         add_menu(id, old.menu);
         console.log('use', id, old.addr);
@@ -408,11 +417,15 @@ function cb_page(url, xhr, arg) {
     g_page_id = arg.page_id;
 
     if (g_page_id == 0) {
-        g_page_cnt = (typeof(cnt) == 'function') ? cnt(html) : cnt.exec(html)[1];
+        if (typeof(cnt) == 'function') {
+            g_page_cnt = cnt(html);
+        } else if (ret = cnt.exec(html)) {
+            g_page_cnt = ret[1];
+        }
     }
 
-    for (let i = 0; ret = reg.exec(html); i++) {
-        fnt(ret, data);
+    for (let ret; ret = reg.exec(html);) {
+        data.push(...fnt(ret));
     }
 
     if (data.length == 0) {
@@ -421,7 +434,7 @@ function cb_page(url, xhr, arg) {
 
     add_video(data, page.img);
 
-    set_page_id();
+    document.getElementById('page_num').innerText = g_page_id + '/' + g_page_cnt;
 }
 
 function get_page(id, uri, page_id) {
@@ -430,13 +443,12 @@ function get_page(id, uri, page_id) {
     let menu = param.menu;
     let url = page.url;
 
-    if (menu.pst != null) {
+    if (menu.pst == null) {
+        get_data(url.replace('{URI}', uri).replace('{PAGE}', page_id + 1), cb_page, { id: id, page_id : page_id });
+    } else {
         let res = JSON.parse(uri);
         let data = {command:"WEB_GET_INFO", pageNumber:page_id + 1, RecordsPage:20, typeId:res.typeId, typeMid:1, type:1, languageType:"CN", content:res.content};
         pst_data(url, JSON.stringify(data), cb_page, { id: id, page_id : page_id });
-    } else {
-        url = url.replace('{URI}', uri).replace('{PAGE}', page_id + 1);
-        get_data(url, cb_page, { id: id, page_id : page_id });
     }
 }
 
@@ -447,7 +459,7 @@ function on_change(keydown) {
     let title = option.innerText;
     let parent = option.parentNode;
     let find_id = parent.id;
-    let page_id;
+    let page_id = 0;
 
     g_id = parent.label;
 
@@ -458,12 +470,10 @@ function on_change(keydown) {
     }
 
     if (!keydown) {
-        page_id = 0;
         g_uri = (title == 'find') ? menu.value.replace('{INPUT}', input.value) : menu.value;
     } else if (/^\d+$/.exec(input.value)) {
         page_id = Number(input.value);
     } else {
-        page_id = 0;
         g_uri = menu.options[find_id].value.replace('{INPUT}', input.value);
         menu.selectedIndex = find_id;
     }

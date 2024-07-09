@@ -74,7 +74,7 @@
   var isRandPlay = true;
   var isPlaylist = false;
   var playlist_li;
-  
+
   // 展开/收回列表按钮
   function onlist(open) {
     if (!open) { isPlaylist = !isPlaylist; }
@@ -106,7 +106,8 @@
     if (filelist.length <= 0) {
       await getFilelist();
       init();
-      if (filelist.length > 0) onrun();
+      switchTrack(trackId, true);
+      onrun();
       return;
     }
 
@@ -178,14 +179,18 @@
   // 切换
   function switchTrack(id, scrollTop){
       video.pause();
-      loadTrack(id, scrollTop);
-      video.play();
-  }
-
-  // 加载
-  function loadTrack(id, scrollTop){
       video.src = filelist[id].file;
       video.load();
+
+      var playPromise = video.play();
+
+      if (playPromise !== undefined) {
+          playPromise.then(function() {
+              console.log(video.src, 'ok');
+          }).catch(function(error) {
+              console.log(video.src, 'fail');
+          });
+      }
 
       playlist_li[trackId].style['color'] = '#989898';
       playlist_li[trackId].style['padding'] = '3px 5px';
@@ -215,7 +220,7 @@
 
     console.log(filelist);
 
-    path = prompt('请输入目录', 'file:\\\\D:\\1.play\\mp3\\');
+    path = prompt('请输入目录', 'file://D:/1.play/mp3/');
   }
 
   // 初始化
@@ -254,7 +259,5 @@
     playlist_li = document.getElementsByTagName("li");
 
     console.log('playlist:   ' + playlist_li.length);
-
-    loadTrack(trackId, true);
   }
 </script>
