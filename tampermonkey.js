@@ -58,8 +58,8 @@ menu : {
 page : {
  url : '{ADDR}{URI}/{PAGE}',
  img : '-webp',
- cnt : /data-total-page="([0-9]+)"/,
- reg : /<img alt="(.+?)".+?(https:\/\/.+?\/videos(\/.+?\/)cover\/5_505_259.+?)"/g,
+ cnt : /data-total-page="(\d+)"/,
+ reg : /<img alt="(.+?)"[\s\S]+?(https:\/\/.+?\/videos(\/.+?\/)cover\/5_505_259.+?)"/g,
  fnt : (reg)=>{ return [reg[1], reg[2], 'https://zgtscy.com/videos' + reg[3] + 'g.m3u8?h=eafeb8148cf1a15']; }}},
 mm : {
 addr : {
@@ -83,12 +83,12 @@ addr : {
          /targetUrls = \[\s+"([^"]+)/ ]},
 menu : {
  uri : '',
- reg : /href="(\/type\/(?!game)(?!chigua)(?!nvyou).+?)" class="menu-link">(.+?)</g,
+ reg : (html)=>{ let data = [], reg = /href="(\/type\/(?!game)(?!chigua)(?!nvyou).+?)" class="menu-link">(.+?)</g, ret; while (ret = reg.exec(html)) data.push({ uri : get_str(ret[1]) + '---', title : get_str(ret[2]) }); return data; },
  fnd : '/search/{INPUT}/' },
 page : {
- url : '{ADDR}{URI}---{PAGE}',
+ url : '{ADDR}{URI}{PAGE}',
  img : '-xor',
- cnt : /\[page\]', (\d+), event/,
+ cnt : /(\d+), event/,
  reg : /<img data-original="(.+?)".+?(\/video\/m3u8\/\d+\/\d+\/[\da-z]+\/).+?vod-title">(.+?)</g,
  fnt : (reg)=>{ return [reg[3], reg[1], 'https://ww.huangke10.cn' + reg[2] + 'CDN/index.m3u8']; }}},
 xj : {
@@ -414,13 +414,15 @@ function cb_page(url, xhr, arg) {
     let data = [];
     let ret;
 
+    //console.log(html);
+
     g_page_id = arg.page_id;
 
     if (g_page_id == 0) {
         if (typeof(cnt) == 'function') {
             g_page_cnt = cnt(html);
         } else if (ret = cnt.exec(html)) {
-            g_page_cnt = ret[1];
+            g_page_cnt = Number(ret[1]);
         }
     }
 
