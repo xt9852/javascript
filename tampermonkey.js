@@ -5,17 +5,23 @@
 // @match        https://hm.baidu.com/hm.js?*
 // @require      https://cdn.jsdelivr.net/npm/hls.js
 // @require      https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js
 // @connect      obs-helf.cucloud.cn
-// @connect      17caaq.com
+// @connect      17caas.com
 // @connect      github.io
 // @connect      88a6.cc
 // @connect      github.com
 // @connect      mm179.cc
-// @connect      mm257.cc
-// @connect      kkht32.vip
-// @connect      htpdo.vip
+// @connect      mm260.cc
+// @connect      mm273.cc
+// @connect      lms1.ai
+// @connect      194181.com
+// @connect      xuanqfo.com
+// @connect      xianggelilajc.com
+// @connect      kkht34.vip
 // @connect      ht27x.vip
-// @connect      ht27u.vip
+// @connect      ht28l.vip
+// @connect      ht28g.vip
 // @connect      134.122.173.8
 // @connect      dxj5566.com
 // @connect      ccdata.7wzx9.com
@@ -39,42 +45,59 @@ var g_param = {
   reg : [ /color="red">([^<]+)\/<\/font><\/p>/ ]},
  menu : {
   uri : '',
-  reg :  /href="(\/category.+?)">[\s\S]+?(&#.+?;)\s+<\/div>/g,
-  fnd : '/search/0.html?keyword={INPUT}' },
+  reg :  /(category\/.+?)">[\s\S]+?(&#.+?;)\s+<\/div>/g,
+  fnd : 'search/0.html?keyword={INPUT}' },
  page : {
-  url : '{ADDR}{URI}&page={PAGE}',
-  img : 'xor',
+  url : '{ADDR}/{URI}&page={PAGE}',
   cnt : />\d+\/(\d+)</,
   reg : /((&#47;&#118;|\/v).+?)(&#118;&#111;&#100;|vod)[\s\S]+?rank-title">(.+?)</g,
-  fnt : (ret)=>{ let url = 'https://mcealpr.xn--viq4cv52gw2nsuk.com' + str(ret[1]); return [str(ret[4]), url + 'vod_en.jpg', url + 'index.m3u8']; }}},
+  fnt : (ret)=>{ let url = 'https://mcealpr.xn--viq4cv52gw2nsuk.com' + str(ret[1]); return [str(ret[4]), url + 'vod_en.jpg', url + 'index.m3u8']; },
+  img : 'xor'}},
 88 : {
  addr : {
   beg : 'https://v88avnetwork.github.io/88av.html',
   reg : [ /"_blank">([^<]+)/ ]},
  menu : {
   uri : '',
-  reg :  /"?nav-item"?><a\s+href="?([^">]+)"?>([^<\s]+)/g,
-  fnd : '/search/{INPUT}' },
+  reg :  /"?nav-item"?><a\s+href="?\/([^">]+)"?>([^<\s]+)/g,
+  fnd : 'search/{INPUT}' },
  page : {
-  url : '{ADDR}{URI}/{PAGE}',
-  img : '',
+  url : '{ADDR}/{URI}/{PAGE}',
   cnt : /data-total-page="(\d+)"/,
   reg : /<img alt="(.+?)"[\s\S]+?(https:\/\/.+?\/videos(\/.+?\/)cover\/5_505_259)/g,
-  fnt : (ret)=>{ return [ret[1], ret[2] + '.webp', 'https://zgtscy.com/videos' + ret[3] + 'g.m3u8?h=eafeb8148cf1a15']; }}},
+  fnt : (ret)=>{ return [ret[1], ret[2] + '.webp', 'https://zgtscy.com/videos' + ret[3] + 'g.m3u8?h=eafeb8148cf1a15']; },
+  img : ''}},
+lm : {
+ addr : {
+  beg : 'https://lms1.ai',
+  reg : [ (html)=>{ return /CDN = "(.+?)"/.exec(html)[1] + 'json/config.js'; },
+          (html)=>{ let ret = /"fileDomain":"(.+?)","videoDomain":"(.+?)\\.+?,"jsonCDN":"(.+?)\/"/.exec(html); g_param.lm.dat = {img:ret[1], vod:ret[2], json:ret[3]}; return ret[3];}]},
+ menu : {
+  uri : '/json/zone_1.json',
+  ini : (html)=>{ let e = CryptoJS.AES.decrypt(html, CryptoJS.enc.Utf8.parse("6E31ECDEF3EEC0E6"), { mode: CryptoJS.mode.ECB }); return CryptoJS.enc.Utf8.stringify(e); },
+  reg : /"repositoryZoneId":"(\d+)","repositoryZoneName":"(.+?)"/g },
+ page : {
+  url : '{ADDR}/json/rz_{URI}_{PAGE}.json',
+  ini : (html)=>{ return g_param.lm.menu.ini(html); },
+  cnt : (html)=>{ let reg = /"totalCount":(\d+)/g; return Math.ceil(reg.exec(html)[1] / 100); },
+  reg : /"repositoryId":"(\d+)","publisher".+?"repositoryName":"(.+?)".+?"repositoryCoverUrl":"(.+?)"/g,
+  fnt : (ret)=>{ return [ret[2], g_param.lm.dat.img + ret[3], g_param.lm.dat.json + '/json/' + ret[1] + '.html' ]; },
+  img : 'lm',
+  vod : (data, element)=>{ element.id = g_param.lm.dat.vod + /"shardingFileUrl":"(.+?)"/.exec(data)[1]; }}},
 mm : {
  addr : {
   beg : 'https://github.com/maomimaomiav/maomi/blob/main/README.md',
   reg : [ (html)=>{ return 'https://' + /\[(mm.+?)\]/.exec(html)[1]; }, /refresh[\s\S]+(https:\/\/.+?)"/ ]},
  menu : {
   uri : '/search/ca',
-  reg :  /(\/tags\/.+?)\/index.html.+?data-onsite-or-offsite=""\s+>(.+?)</g,
-  fnd : '/search/{INPUT}' },
+  reg :  /(tags\/.+?)\/index.html.+?data-onsite-or-offsite=""\s+>(.+?)</g,
+  fnd : 'search/{INPUT}' },
  page : {
-  url : '{ADDR}{URI}/{PAGE}.html',
-  img : 'sub',
+  url : '{ADDR}/{URI}/{PAGE}.html',
   cnt : />(\d+)<\/a>\s+<.+?>&#19979;&#19968;&#39029;/,
   reg : /data-original="(https:\/\/.+?(\/.+?\/)cover\/cover_encry\.pip)[\s\S]*?<h3>([^<]+)/g,
-  fnt : (ret)=>{ return [str(ret[3]), ret[1], 'https://365play.dd99rr.live' + ret[2] + 'm3u8/maomi365.m3u8']; }}},
+  fnt : (ret)=>{ return [str(ret[3]), ret[1], 'https://365play.dd99rr.live' + ret[2] + 'm3u8/maomi365.m3u8']; },
+  img : 'sub'}},
 mt : {
  addr : {
   beg : 'https://github.com/htapp/htapp',
@@ -83,14 +106,14 @@ mt : {
           /targetUrls = \[\s+"([^"]+)/ ]},
  menu : {
   uri : '',
-  reg : (html)=>{ let data = [], reg = /href="(\/type\/(?!game)(?!chigua)(?!nvyou).+?)" class="menu-link">(.+?)</g, ret; while (ret = reg.exec(html)) data.push({uri : str(ret[1]) + '---', title : str(ret[2])}); return data; },
-  fnd : '/search/{INPUT}/' },
+  reg : (html)=>{ let data = [], reg = /(type\/(?!game)(?!chigua)(?!nvyou).+?)" class="menu-link">(.+?)</g, ret; while (ret = reg.exec(html)) data.push({uri : str(ret[1]) + '---', title : str(ret[2])}); return data; },
+  fnd : 'search/{INPUT}/' },
  page : {
-  url : '{ADDR}{URI}{PAGE}',
-  img : 'xor',
+  url : '{ADDR}/{URI}{PAGE}',
   cnt : /(\d+), event/,
   reg : /<img data-original="(.+?)".+?(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?vod-title">(.+?)</g,
-  fnt : (ret)=>{ return [ret[3], ret[1], 'https://ww.huangke10.cn' + ret[2] + 'CDN/index.m3u8']; }}},
+  fnt : (ret)=>{ return [ret[3], ret[1], 'https://ww.huangke10.cn' + ret[2] + 'CDN/index.m3u8']; },
+  img : 'xor'}},
 xj : {
  addr : {
   beg : 'https://134.122.173.8:8083/dxjgg/abs.js',
@@ -98,37 +121,42 @@ xj : {
  menu : {
   uri : '/getDataInit',
   pst : JSON.stringify({name: "John", age: 31, city: "New York"}),
-  reg : (html)=>{ let ret = [], res = JSON.parse(html); g_param.xj.vod = res.data.macVodLinkMap; for (let i = 0; i < 3; i++) for (let j in res.data.menu0ListMap[i].menu2List) { let m = res.data.menu0ListMap[i].menu2List[j]; ret.push({uri : '{"typeId":'+m.typeId2+',"content":""}', title : m.typeName2}); } return ret; },
+  ini : (html)=>{ let res = JSON.parse(html); g_param.xj.dat = res.data.macVodLinkMap; return res; },
+  reg : (html)=>{ let ret = []; for (let i = 0; i < 3; i++) for (let j in html.data.menu0ListMap[i].menu2List) { let m = html.data.menu0ListMap[i].menu2List[j]; ret.push({uri : '{"typeId":'+m.typeId2+',"content":""}', title : m.typeName2}); } return ret; },
   fnd : '{"typeId":0,"content":"{INPUT}"}' },
  page : {
   url : '{ADDR}/forward',
-  img : '',
   cnt : /"pageAllNumber":(\d+)/,
   reg : /(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?vod_name":"(.+?)".+?vod_server_id":(\d+)/g,
-  fnt : (ret)=>{ let vod = g_param.xj.vod[ret[3]]; return [ret[2], vod.PIC_LINK_1 + ret[1] + '1.jpg', vod.LINK_1 + ret[1] + 'playlist.m3u8']; }}}};
+  fnt : (ret)=>{ let dat = g_param.xj.dat[ret[3]]; return [ret[2], dat.PIC_LINK_1 + ret[1] + '1.jpg', dat.LINK_1 + ret[1] + 'playlist.m3u8']; },
+  img : ''}}};
 
 function img() {
-    function decode(data, beg, xor) {
+    function get(url, bin, callback, element, arg) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = bin ? 'arraybuffer' : '';
+        xhr.send();
+        xhr.onload = ()=>{ callback(xhr.response, element, arg); }
+    }
+
+    function decode(data, element, arg) {
         let bin = [];
         data = new Uint8Array(data);
-        for (let i = beg; i < data.byteLength; i++) { bin += String.fromCharCode(xor ? data[i] ^ xor : data[i]); }
-        return 'data:image/jpeg;base64,' + window.btoa(bin);
+        for (let i = arg.beg; i < data.byteLength; i++) { bin += String.fromCharCode(arg.xor ? data[i] ^ arg.xor : data[i]); }
+        element.poster = 'data:image/jpeg;base64,' + window.btoa(bin);
     }
 
-    function get_img(addr, element, fnt, img) {
-        let xhr = new XMLHttpRequest();
-        xhr.open('GET', addr, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.send();
-        xhr.onload = ()=>{ element.poster = fnt(xhr.response, img.beg, img.xor); }
-    }
+    const data = {sub : {beg : 17, xor : null}, xor : {beg : 0, xor : 0x88}};
 
     const observer = lozad('.lozad',{ load : (element)=>{
-        const data = {sub : {beg : 17, xor : null}, xor : {beg : 0, xor : 0x88}};
-        let img = data[element.getAttribute("img")];
+        let img = element.getAttribute("img")
+        let dat = data[img];
 
-        if (img != null) {
-            get_img(element.poster, element, decode, img);
+        if (dat != null) {
+            get(element.poster, true, decode, element, dat);
+        } else if (img == 'lm') {
+            get(element.id, null, g_param.lm.page.vod, element);
         }
      }});
 
@@ -238,8 +266,8 @@ function video(data, flag) {
         video.onclick = on_play;
         video.style = 'cursor:pointer;max-height:500px';
         video.setAttribute('class', 'lozad');
-        video.setAttribute('img', flag);
         video.setAttribute('poster', data[i + 1]);
+        video.setAttribute('img', flag);
         content.appendChild(video);
     }
 
@@ -267,6 +295,7 @@ function cb_addr_get_timeout(url, xhr, arg) {
     let id = arg.id;
     let times = arg.times[0];
     let timeout = ++arg.times[2];
+    let ret;
 
     console.log(id, 'get', url, times, timeout, xhr.error ? xhr.error : 'timeout');
 
@@ -284,7 +313,7 @@ function cb_addr_try_timeout(url, xhr, arg) {
 
     console.log(id, 'try', url, times, timeout, xhr.error ? xhr.error : 'timeout');
 
-    if (/'Refused to connect to "[^"]+": This domain is not a part of the @connect list'/.exec(xhr.error)) { return; }
+    if (/Refused to connect to ".+?": This domain is not a part of the @connect list/.exec(xhr.error)) { return; }
 
     if (timeout >= 3) {
         if (times < 1) {
@@ -332,9 +361,11 @@ function cb_addr_try(url, xhr, arg) {
     let addr = param.addr;
     let page = param.page;
     let menu = param.menu;
+    let ini = menu.ini;
     let reg = menu.reg;
     let fnd = menu.fnd;
     let html = xhr.responseText;
+    let data = [];
     let ret;
 
     if ((ret = /"refresh"[\s\S]+(https:\/\/[^"\/]+)/.exec(html)) || (ret = /targetSites = \[\s+'([^']+)/.exec(html))) {
@@ -344,7 +375,13 @@ function cb_addr_try(url, xhr, arg) {
         return;
     }
 
-    let data = [{uri : fnd, title : 'find'}];
+    if (ini) {
+        html = ini(html);
+    }
+
+    if (fnd) {
+        data.push({uri : fnd, title : 'find'});
+    }
 
     if (typeof(reg) == 'function') {
         data.push(...reg(html));
@@ -361,7 +398,7 @@ function cb_addr_try(url, xhr, arg) {
 
     select(id, data);
 
-    GM_setValue(id, {date : date, addr : addr.url, menu : data, vod : param.vod});
+    GM_setValue(id, {date : date, addr : addr.url, menu : data, dat : param.dat});
 
     console.log(id, 'set', GM_getValue(id));
 }
@@ -380,7 +417,7 @@ function addr(id) {
         console.log(id, 'get', addr.beg);
     } else if (old.date == now) {
         page.url = page.url.replace('{ADDR}', old.addr);
-        param.vod = old.vod;
+        param.dat = old.dat;
         select(id, old.menu);
         console.log(id, 'use', old.addr);
     } else if (menu.pst != null) {
@@ -398,6 +435,7 @@ function cb_page(url, xhr, arg) {
     let id = arg.id;
     let param = g_param[id];
     let page = param.page;
+    let ini = page.ini;
     let reg = page.reg;
     let cnt = page.cnt;
     let fnt = page.fnt;
@@ -406,6 +444,10 @@ function cb_page(url, xhr, arg) {
     let ret;
 
     g_page_id = arg.page_id;
+
+    if (ini) {
+        html = ini(html);
+    }
 
     if (g_page_id == 0) {
         if (typeof(cnt) == 'function') {
@@ -477,6 +519,7 @@ function on_change(keydown) {
 function main() {
     //GM_deleteValue('17');
     //GM_deleteValue('88');
+    //GM_deleteValue('lm');
     //GM_deleteValue('mm');
     //GM_deleteValue('mt');
     //GM_deleteValue('xj');
