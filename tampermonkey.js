@@ -2,34 +2,40 @@
 // @name         a
 // @description  a
 // @version      0
-// @match        https://hm.baidu.com/hm.js?*
-// @require      https://cdn.jsdelivr.net/npm/hls.js
-// @require      https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js
-// @require      https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js
-// @connect      obs-helf.cucloud.cn
-// @connect      17caas.com
-// @connect      github.io
-// @connect      88a6.cc
-// @connect      github.com
-// @connect      mm179.cc
-// @connect      mm260.cc
-// @connect      mm273.cc
-// @connect      lms1.ai
-// @connect      194181.com
-// @connect      xuanqfo.com
-// @connect      xianggelilajc.com
-// @connect      kkht34.vip
-// @connect      ht27x.vip
-// @connect      ht28l.vip
-// @connect      ht28g.vip
-// @connect      134.122.173.8
-// @connect      dxj5566.com
-// @connect      ccdata.7wzx9.com
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_listValues
 // @grant        GM_deleteValue
 // @grant        GM_xmlhttpRequest
+// @match        https://hm.baidu.com/hm.js?*
+// @require      https://cdn.jsdelivr.net/npm/hls.js
+// @require      https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js
+// @require      https://cdn.jsdelivr.net/npm/crypto-js/crypto-js.min.js
+// @require      https://sm-static.trafficmanager.net/lib/fernetBrowser.min.js
+
+// @connect      github.io
+// @connect      88a1882.cc
+
+// @connect      trafficmanager.net
+// @connect      cucloud.cn
+// @connect      bcebos.com
+// @connect      aliyuncs.com
+// @connect      mm324.cc
+
+// @connect      hls5.ai
+// @connect      521057.com
+// @connect      032546.com
+// @connect      yangknn.com
+// @connect      xianggelilajc.com
+
+// @connect      github.com
+// @connect      kkht38.vip
+// @connect      ht29o.vip
+// @connect      ht30j.vip
+
+// @connect      134.122.173.8
+// @connect      dxj5566.com
+// @connect      7wzx9.com
 // ==/UserScript==
 
 var g_hls = null;
@@ -39,125 +45,138 @@ var g_uri = '';
 var g_page_id = 0;
 var g_page_cnt = 0;
 var g_param = {
-17 : {
- addr : {
-  beg : 'https://fabu1.obs-helf.cucloud.cn/index.html',
-  reg : [ /color="red">([^<]+)\/<\/font><\/p>/ ]},
- menu : {
-  uri : '',
-  reg :  /(category\/.+?)">[\s\S]+?(&#.+?;)\s+<\/div>/g,
-  fnd : 'search/0.html?keyword={INPUT}' },
- page : {
-  url : '{ADDR}/{URI}&page={PAGE}',
-  cnt : />\d+\/(\d+)</,
-  reg : /((&#47;&#118;|\/v).+?)(&#118;&#111;&#100;|vod)[\s\S]+?rank-title">(.+?)</g,
-  fnt : (ret)=>{ let url = 'https://mcealpr.xn--viq4cv52gw2nsuk.com' + str(ret[1]); return [str(ret[4]), url + 'vod_en.jpg', url + 'index.m3u8']; },
-  img : 'xor'}},
 88 : {
+ data : {},
  addr : {
   beg : 'https://v88avnetwork.github.io/88av.html',
-  reg : [ /"_blank">([^<]+)/ ]},
+  reg : [ / href="(.+?)" target="_blank"/ ]},
  menu : {
-  uri : '',
+  beg : '',
   reg :  /"?nav-item"?><a\s+href="?\/([^">]+)"?>([^<\s]+)/g,
-  fnd : 'search/{INPUT}' },
+  uri : '/{1}/{PAGE}',
+  fnd : '/search/{INPUT}/{PAGE}' },
  page : {
-  url : '{ADDR}/{URI}/{PAGE}',
   cnt : /data-total-page="(\d+)"/,
   reg : /<img alt="(.+?)"[\s\S]+?(https:\/\/.+?\/videos(\/.+?\/)cover\/5_505_259)/g,
-  fnt : (ret)=>{ return [ret[1], ret[2] + '.webp', 'https://zgtscy.com/videos' + ret[3] + 'g.m3u8?h=eafeb8148cf1a15']; },
-  img : ''}},
-lm : {
+  fnt : (ret)=>{ return [ret[1], ret[2] + '.webp', 'https://yrxya.xyz/videos' + ret[3] + 'g.m3u8?h=949691b4955da2c']; }}},
+er : {
+ data : {},
  addr : {
-  beg : 'https://lms1.ai',
-  reg : [ (html)=>{ return /CDN = "(.+?)"/.exec(html)[1] + 'json/config.js'; },
-          (html)=>{ let ret = /"fileDomain":"(.+?)","videoDomain":"(.+?)\\.+?,"jsonCDN":"(.+?)\/"/.exec(html); g_param.lm.dat = {img:ret[1], vod:ret[2], json:ret[3]}; return ret[3];}]},
+  beg : 'https://fabu.trafficmanager.net/index.html',
+  reg : [ /href="(.+?)"/,
+          (html)=>{ return atob(/"url": "(.+?)"},\s];/.exec(html)[1]); },
+          (html)=>{ let e = /window.CONFIG ="(.+?)";/.exec(html)[1];
+                    let j = JSON.parse(fer(e));
+                    g_param.er.data.img = 'https://' + j.video_img_url;
+                    g_param.er.data.vod = 'https://' + j.video_play_url_list[0].url[0];
+                    return 'https://' + j.api_url; } ]},
  menu : {
-  uri : '/json/zone_1.json',
-  ini : (html)=>{ let e = CryptoJS.AES.decrypt(html, CryptoJS.enc.Utf8.parse("6E31ECDEF3EEC0E6"), { mode: CryptoJS.mode.ECB }); return CryptoJS.enc.Utf8.stringify(e); },
-  reg : /"repositoryZoneId":"(\d+)","repositoryZoneName":"(.+?)"/g },
+  beg : '/api/vod/tag_group?count=true&page=1&per_page=20',
+  ini : (html)=>{ return fer(JSON.parse(html)['x-data']); },
+  reg : /"id":(\d+),"name":"(.+?)"/g,
+  uri : '/api/vod/video?page={PAGE}&per_page=20&tag={1}',
+  fnd : '/search/?page={PAGE}&per_page=20&search={INPUT}' },
  page : {
-  url : '{ADDR}/json/rz_{URI}_{PAGE}.json',
-  ini : (html)=>{ return g_param.lm.menu.ini(html); },
-  cnt : (html)=>{ let reg = /"totalCount":(\d+)/g; return Math.ceil(reg.exec(html)[1] / 100); },
-  reg : /"repositoryId":"(\d+)","publisher".+?"repositoryName":"(.+?)".+?"repositoryCoverUrl":"(.+?)"/g,
-  fnt : (ret)=>{ return [ret[2], g_param.lm.dat.img + ret[3], g_param.lm.dat.json + '/json/' + ret[1] + '.html' ]; },
-  img : 'lm',
-  vod : (data, element)=>{ element.id = g_param.lm.dat.vod + /"shardingFileUrl":"(.+?)"/.exec(data)[1]; }}},
-mm : {
+  ini : (html)=>{ return fer(JSON.parse(html)['x-data']); },
+  cnt : (html)=>{ return Math.ceil(/"total":(\d+)/.exec(html)[1] / 20); },
+  reg : /"id":(\d+),"name":"(.+?)"/g,
+  fnt : (ret)=>{ return [ret[2], ret[1], ret[1]]; },
+  img : (e)=>{ get(g_param.er.data.addr + '/api/vod/video/' + e.id, g_param.er.page.im1, {'xml':true, e:e, img:g_param.er.data.img, vod:g_param.er.data.img}); },
+  im1 : (url, html, arg)=>{ let j = fer(JSON.parse(html)['x-data']);
+                                arg.e.id = arg.vod + /"play_url":"(.+?)"/.exec(j)[1];
+                                get(arg.img + /"pic":"(.+?)"/.exec(j)[1], g_param.er.page.im2, arg); },
+  im2 : (url, html, arg)=>{ const e = html.split("@@@"); arg.e.poster = fer(e[0]) + e[1]; }}},
+hl : {
+ data : {},
  addr : {
-  beg : 'https://github.com/maomimaomiav/maomi/blob/main/README.md',
-  reg : [ (html)=>{ return 'https://' + /\[(mm.+?)\]/.exec(html)[1]; }, /refresh[\s\S]+(https:\/\/.+?)"/ ]},
+  beg : 'https://hls5.ai',
+  reg : [ (html)=>{ g_param.hl.data.json = /CDN = "(.+?)"/.exec(html)[1]; return g_param.hl.data.json + 'json/diversion.js'; },
+          (html)=>{ g_param.hl.data.html = /"jumpDomain":"(.+?)"/.exec(html)[1]; return g_param.hl.data.json + 'json/config.js'; },
+          (html)=>{ console.log(html);let ret = /"fileDomain":"(.+?)","videoDomain":".+?\\n(.+?)\\.+?",.+?"jsonCDN":"(.+?)\/"/.exec(html);
+                    let data = g_param.hl.data; data.img = ret[1]; data.vod = ret[2]; data.json = ret[3]; return ret[3]; }]},
  menu : {
-  uri : '/search/ca',
-  reg :  /(tags\/.+?)\/index.html.+?data-onsite-or-offsite=""\s+>(.+?)</g,
-  fnd : 'search/{INPUT}' },
+  beg : '/json/zone_0.json',//'/json/label_all.json',//
+  ini : (html)=>{ return aes(html); },
+  reg : /"repositoryZoneId":"(\d+)","repositoryZoneName":"(.+?)"/g,///"labelId":"(\d+)","labelName":"(.+?)"/g },//
+  uri : '/json/rz_{1}_{PAGE}.json' },//'{ADDR}/json/rl_{URI}_{PAGE}.json',//
  page : {
-  url : '{ADDR}/{URI}/{PAGE}.html',
-  cnt : />(\d+)<\/a>\s+<.+?>&#19979;&#19968;&#39029;/,
-  reg : /data-original="(https:\/\/.+?(\/.+?\/)cover\/cover_encry\.pip)[\s\S]*?<h3>([^<]+)/g,
-  fnt : (ret)=>{ return [str(ret[3]), ret[1], 'https://365play.dd99rr.live' + ret[2] + 'm3u8/maomi365.m3u8']; },
-  img : 'sub'}},
-mt : {
+  ini : (html)=>{ return aes(html); },
+  cnt : (html)=>{ return Math.ceil(/"totalCount":(\d+)/.exec(html)[1] / 100); },
+  reg : /"repositoryId":"(\d+)","publisher".+?"repositoryName":"(.+?)".+?"repositoryCoverUrl":"(.+?)"/g,///"repositoryCoverUrl":"(.+?)",.+?,"repositoryName":"(.+?)",.+?,"shardingFileUrl":"(.+?)"/g,//
+  fnt : (ret)=>{ return [ret[2], g_param.hl.data.img + ret[3], ret[1] ]; }, // g_param.hl.data.html + '/json/' + ret[1] + '.html?t=s0'
+  img : (e)=>{ get(g_param.hl.data.html + '/json/' + e.id + '.html?t=s0', g_param.hl.page.im1, e); },
+  im1  : (url, html, arg)=>{ arg.id = g_param.hl.data.vod + /"shardingFileUrl":"(.+?)"/.exec(html)[1]; },
+  }},
+ht : {
+ data : {},
  addr : {
   beg : 'https://github.com/htapp/htapp',
   reg : [ (html)=>{ return 'https://' + /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/.exec(html)[1]; },
           (html)=>{ let u = /'(\d+)/.exec(html)[1], url = '', j = 0; for (; j < u.length; j += 4) url += String.fromCharCode(u.substr(j, 4) - 1000); return url + '/ht/index.html'; },
           /targetUrls = \[\s+"([^"]+)/ ]},
  menu : {
-  uri : '',
-  reg : (html)=>{ let data = [], reg = /(type\/(?!game)(?!chigua)(?!nvyou).+?)" class="menu-link">(.+?)</g, ret; while (ret = reg.exec(html)) data.push({uri : str(ret[1]) + '---', title : str(ret[2])}); return data; },
-  fnd : 'search/{INPUT}/' },
+  beg : '',
+  reg : /(type\/(?!game)(?!chigua)(?!nvyou).+?)" class="menu-link">(.+?)</g,
+  uri : '/{1}---{PAGE}',
+  fnd : '/search/{INPUT}/{PAGE}' },
  page : {
-  url : '{ADDR}/{URI}{PAGE}',
   cnt : /(\d+), event/,
-  reg : /<img data-original="(.+?)".+?(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?vod-title">(.+?)</g,
-  fnt : (ret)=>{ return [ret[3], ret[1], 'https://ww.huangke10.cn' + ret[2] + 'CDN/index.m3u8']; },
-  img : 'xor'}},
+  reg : /data-original="(https:\/\/[^/]+\/upload\/vod\/\d+-\d+\/[0-9a-f]+_xfile.jpg)".+?(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?vod-title">(.+?)</g,
+  fnt : (ret)=>{ return [str(ret[3]), ret[1], 'https://ww.huangke10.cn' + ret[2] + 'CDN/index.m3u8']; },
+  img : (e)=>{ get(e.poster, g_param.ht.page.im1, {'xml':true, bin:true, e:e}); },
+  im1 : (url, html, arg)=>{ let bin = [], data = new Uint8Array(html); for (let i = 0; i < data.byteLength; i++) bin += String.fromCharCode(data[i] ^ 0x88);
+                            arg.e.poster = 'data:image/jpeg;base64,' + window.btoa(bin); }}},
+mm : {
+ data : {},
+ addr : {
+  beg : 'https://fabu.trafficmanager.net/index.html',
+  reg : [ /href="(.+?)"/, (html)=>{ return atob(/猫咪看片", "url": "(.+?)"/.exec(html)[1]).replace('\n', ''); } ]},
+ menu : {
+  beg : '/home.html',
+  reg :  /(tags\/.+?)\/index.html.+?data-onsite-or-offsite=""\s+>(.+?)</g,
+  uri : '/{1}/{PAGE}.html',
+  fnd : '/search/{INPUT}/{PAGE}.html' },
+ page : {
+  cnt : />(\d+)<\/a>\s+<.+?>&#19979;&#19968;&#39029;/,
+  reg : /data-original="(https:\/\/.+?(\/.+?\/)cover\/cover_encry\.pip)[\s\S]*?<h3>([^<]+)/g,
+  fnt : (ret)=>{ return [str(ret[3]), ret[1], 'https://365play.dd99rr.live' + ret[2] + 'm3u8/maomi365.m3u8']; },
+  img : (e)=>{ get(e.poster, g_param.mm.page.im1, {xml:true,bin:true,e:e}); },
+  im1 : (url, html, arg)=>{ let bin = [], data = new Uint8Array(html); for (let i = 17; i < data.byteLength; i++) bin += String.fromCharCode(data[i]);
+                            arg.e.poster = 'data:image/jpeg;base64,' + window.btoa(bin); }}},
 xj : {
+ data : {},
  addr : {
   beg : 'https://134.122.173.8:8083/dxjgg/abs.js',
   reg : [ (html)=>{ return 'https://www.' + /domainNames = \[".+?","(.+?)"/.exec(html)[1] + '/js/base41.js'; }, /"(https:\/\/.+?)\/forward"/ ]},
  menu : {
-  uri : '/getDataInit',
+  beg : '/getDataInit',
   pst : JSON.stringify({name: "John", age: 31, city: "New York"}),
-  ini : (html)=>{ let res = JSON.parse(html); g_param.xj.dat = res.data.macVodLinkMap; return res; },
-  reg : (html)=>{ let ret = []; for (let i = 0; i < 3; i++) for (let j in html.data.menu0ListMap[i].menu2List) { let m = html.data.menu0ListMap[i].menu2List[j]; ret.push({uri : '{"typeId":'+m.typeId2+',"content":""}', title : m.typeName2}); } return ret; },
+  ini : (html)=>{ let res = JSON.parse(html); g_param.xj.data.group = res.data.macVodLinkMap; return res; },
+  reg : (html)=>{ let ret = []; for (let i = 0; i < 3; i++) for (let j in html.data.menu0ListMap[i].menu2List) {
+                  let m = html.data.menu0ListMap[i].menu2List[j];
+                  ret.push({uri : '{"typeId":'+m.typeId2+',"content":""}', title : m.typeName2}); } return ret; },
+  uri : '/forward',
   fnd : '{"typeId":0,"content":"{INPUT}"}' },
  page : {
-  url : '{ADDR}/forward',
   cnt : /"pageAllNumber":(\d+)/,
   reg : /(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?vod_name":"(.+?)".+?vod_server_id":(\d+)/g,
-  fnt : (ret)=>{ let dat = g_param.xj.dat[ret[3]]; return [ret[2], dat.PIC_LINK_1 + ret[1] + '1.jpg', dat.LINK_1 + ret[1] + 'playlist.m3u8']; },
-  img : ''}}};
+  fnt : (ret)=>{ let data = g_param.xj.data.group[ret[3]]; return [ret[2], data.PIC_LINK_1 + ret[1] + '1.jpg', data.LINK_1 + ret[1] + 'playlist.m3u8']; }}}};
+
+function aes(i) {
+    return CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt(i, CryptoJS.enc.Utf8.parse("6E31ECDEF3EEC0E6"), { mode: CryptoJS.mode.ECB }));
+}
+
+function fer(i) {
+    let secret = new fernet.Secret("NyGRG56A8i5J2JMqh7da83r2MMfgbM7Ppw1aCF8YnAY=");
+    let token = new fernet.Token({secret: secret, token: i, ttl: 0});
+    return token.decode();
+}
 
 function img() {
-    function get(url, bin, callback, element, arg) {
-        let xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = bin ? 'arraybuffer' : '';
-        xhr.send();
-        xhr.onload = ()=>{ callback(xhr.response, element, arg); }
-    }
-
-    function decode(data, element, arg) {
-        let bin = [];
-        data = new Uint8Array(data);
-        for (let i = arg.beg; i < data.byteLength; i++) { bin += String.fromCharCode(arg.xor ? data[i] ^ arg.xor : data[i]); }
-        element.poster = 'data:image/jpeg;base64,' + window.btoa(bin);
-    }
-
-    const data = {sub : {beg : 17, xor : null}, xor : {beg : 0, xor : 0x88}};
-
     const observer = lozad('.lozad',{ load : (element)=>{
-        let img = element.getAttribute("img")
-        let dat = data[img];
-
-        if (dat != null) {
-            get(element.poster, true, decode, element, dat);
-        } else if (img == 'lm') {
-            get(element.id, null, g_param.lm.page.vod, element);
-        }
+        let param = g_param[element.getAttribute('img')];
+        if (param == null) return;
+        param.page.img(element);
      }});
 
     observer.observe();
@@ -185,48 +204,33 @@ function str(str) {
 }
 
 function get(url, cb_load, arg, cb_timeout) {
-    //console.log('get', url);
+    if (arg.xml != null) {
+        //console.log('xml', url);
 
-    GM_xmlhttpRequest({
-        url : url,
-        timeout : 5000,
-        headers : {
-            'User-Agent' : 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
-        },
-        onload(xhr) {
-            cb_load(url, xhr, arg);
-        },
-        onerror(xhr) {
-            cb_timeout ? cb_timeout(url, xhr, arg) : console.log('error:' + url, xhr);
-        },
-        ontimeout(xhr) {
-            cb_timeout ? cb_timeout(url, xhr, arg) : console.log('timeout:' + url, xhr);
-        },
-    });
-}
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = arg.bin ? 'arraybuffer' : '';
+        xhr.send();
+        xhr.onload = ()=>{ cb_load(url, xhr.response, arg); }
+        xhr.onerror = ()=>{ cb_timeout ? cb_timeout(url, xhr, arg) : console.log('error:' + url, xhr); }
+        xhr.ontimeout = ()=>{ cb_timeout ? cb_timeout(url, xhr, arg) : console.log('timeout:' + url, xhr); }
+    } else {
+        let param = {
+            url : url,
+            method : arg.post ? 'POST' : 'GET',
+            timeout : 5000,
+            headers : { 'User-Agent' : 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
+                        'Content-type' : 'application/json' },
+            data : arg.post ? arg.data : null,
+            onload(xhr) { if (xhr.status == 200) cb_load(url, xhr.responseText, arg); else console.log(url, xhr); },
+            onerror(xhr) { cb_timeout ? cb_timeout(url, xhr, arg) : console.log('error:' + url, xhr); },
+            ontimeout(xhr) { cb_timeout ? cb_timeout(url, xhr, arg) : console.log('timeout:' + url, xhr); },
+        };
 
-function post(url, data, cb_load, arg, cb_timeout) {
-    //console.log('post', url, data);
+        //console.log(param);
 
-    GM_xmlhttpRequest({
-        url : url,
-        method : 'POST',
-        timeout : 5000,
-        headers : {
-            'User-Agent' : 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
-            'Content-type' : 'application/json'
-        },
-        data : data,
-        onload(xhr) {
-            cb_load(url, xhr, arg);
-        },
-        onerror(xhr) {
-            cb_timeout ? cb_timeout(url, xhr, arg) : console.log('error:' + url, xhr);
-        },
-        ontimeout(xhr) {
-            cb_timeout ? cb_timeout(url, xhr, arg) : console.log('timeout:' + url, xhr);
-        },
-    });
+        GM_xmlhttpRequest(param);
+    }
 }
 
 function on_play() {
@@ -249,7 +253,9 @@ function on_play() {
     g_hls.on(Hls.Events.MANIFEST_PARSED, function(){ g_video.play(); });
 }
 
-function video(data, flag) {
+function video(data, id) {
+    let param = g_param[id];
+
     let div;
     let video;
     let content = document.getElementById('content');
@@ -267,7 +273,7 @@ function video(data, flag) {
         video.style = 'cursor:pointer;max-height:500px';
         video.setAttribute('class', 'lozad');
         video.setAttribute('poster', data[i + 1]);
-        video.setAttribute('img', flag);
+        if (param != null && param.page != null && param.page.img != null) video.setAttribute('img', id);
         content.appendChild(video);
     }
 
@@ -277,11 +283,13 @@ function video(data, flag) {
 }
 
 function select(id, data) {
+    let select = document.getElementById('menu');
+
     let optgroup = document.createElement('optgroup');
     optgroup.label = id;
+    optgroup.id = select.options.length;
 
-    let menu = document.getElementById('menu');
-    menu.appendChild(optgroup);
+    select.appendChild(optgroup);
 
     for (let i = 0, option; i < data.length; i++) {
         option = document.createElement('option');
@@ -299,6 +307,8 @@ function cb_addr_get_timeout(url, xhr, arg) {
 
     console.log(id, 'get', url, times, timeout, xhr.error ? xhr.error : 'timeout');
 
+    if (/Refused to connect to ".+?"/.exec(xhr.error)) { return; }
+
     if (timeout >= 3) { return; }
 
     get(url, cb_addr_get, arg, cb_addr_get_timeout);
@@ -313,7 +323,7 @@ function cb_addr_try_timeout(url, xhr, arg) {
 
     console.log(id, 'try', url, times, timeout, xhr.error ? xhr.error : 'timeout');
 
-    if (/Refused to connect to ".+?": This domain is not a part of the @connect list/.exec(xhr.error)) { return; }
+    if (/Refused to connect to ".+?"/.exec(xhr.error)) { return; }
 
     if (timeout >= 3) {
         if (times < 1) {
@@ -327,7 +337,7 @@ function cb_addr_try_timeout(url, xhr, arg) {
     get(url, cb_addr_try, arg, cb_addr_try_timeout);
 }
 
-function cb_addr_get(url, xhr, arg) {
+function cb_addr_get(url, html, arg) {
     let id = arg.id;
     let date = arg.date;
     let times = arg.times[0];
@@ -335,42 +345,47 @@ function cb_addr_get(url, xhr, arg) {
     let param = g_param[id];
     let menu = param.menu;
     let addr = param.addr;
+    let data = param.data;
     let reg = addr.reg[step++];
-    let html = xhr.responseText;
 
-    let data = (typeof(reg) == 'function') ? reg(html) : reg.exec(html)[1];
+    let tmp = (typeof(reg) == 'function') ? reg(html) : reg.exec(html)[1];
 
-    console.log(id, 'get', url, times, step, data);
+    console.log(id, 'get', url, times, step, tmp);
 
     if (step < addr.reg.length) {
         arg.times = [ times, step, 0 ];
-        get(data, cb_addr_get, arg, cb_addr_get_timeout);
-    } else if (menu.pst != null) {
-        g_param[id].addr.url = data;
-        post(data + menu.uri, menu.pst, cb_addr_try, arg, cb_addr_try_timeout);
-    } else {
-        g_param[id].addr.url = data;
-        get(data + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
+        get(tmp, cb_addr_get, arg, cb_addr_get_timeout);
+        return;
     }
+
+    data.addr = tmp;
+
+    if (menu.pst != null) {
+        arg.post = true;
+        arg.data = menu.pst;
+    }
+
+    get(tmp + menu.beg, cb_addr_try, arg, cb_addr_try_timeout);
 }
 
-function cb_addr_try(url, xhr, arg) {
+function cb_addr_try(url, html, arg) {
     let id = arg.id;
     let date = arg.date;
     let param = g_param[id];
     let addr = param.addr;
     let page = param.page;
     let menu = param.menu;
+    let data = param.data;
     let ini = menu.ini;
     let reg = menu.reg;
+    let uri = menu.uri;
     let fnd = menu.fnd;
-    let html = xhr.responseText;
-    let data = [];
+    let item = [];
     let ret;
 
-    if ((ret = /"refresh"[\s\S]+(https:\/\/[^"\/]+)/.exec(html)) || (ret = /targetSites = \[\s+'([^']+)/.exec(html))) {
+    if ((ret = /"refresh"[\s\S]+(https?:\/\/[^"\/]+)/.exec(html)) || (ret = /targetSites = \[\s+'([^']+)/.exec(html))) {
         console.log(id, 'ref', ret[1] + menu.uri);
-        g_param[id].addr.url = ret[1];
+        data.addr = ret[1];
         get(ret[1] + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
         return;
     }
@@ -380,25 +395,23 @@ function cb_addr_try(url, xhr, arg) {
     }
 
     if (fnd) {
-        data.push({uri : fnd, title : 'find'});
+        item.push({uri : fnd, title : 'find'});
     }
 
     if (typeof(reg) == 'function') {
-        data.push(...reg(html));
+        item.push(...reg(html));
     } else {
-        while (ret = reg.exec(html)) { data.push({uri : str(ret[1]), title : str(ret[2])}); }
+        while (ret = reg.exec(html)) { item.push({uri : uri.replace('{1}', str(ret[1])), title : str(ret[2])}); }
     }
 
-    if (data.length <= 1) {
+    if (item.length <= 1) {
         console.log(id, 'menu reg error', url, html);
         return;
     }
 
-    page.url = page.url.replace('{ADDR}', addr.url);
+    select(id, item);
 
-    select(id, data);
-
-    GM_setValue(id, {date : date, addr : addr.url, menu : data, dat : param.dat});
+    GM_setValue(id, {date : date, menu : item, data : data});
 
     console.log(id, 'set', GM_getValue(id));
 }
@@ -412,26 +425,31 @@ function addr(id) {
     let now = new Date().toLocaleDateString();
     let arg = {id : id, date : now, times : [0, 0, 0]};
 
-    if (!old) {
+    if (old == null) {
         get(addr.beg, cb_addr_get, arg, cb_addr_get_timeout);
         console.log(id, 'get', addr.beg);
-    } else if (old.date == now) {
-        page.url = page.url.replace('{ADDR}', old.addr);
-        param.dat = old.dat;
-        select(id, old.menu);
-        console.log(id, 'use', old.addr);
-    } else if (menu.pst != null) {
-        addr.url = old.addr;
-        post(old.addr + menu.uri, menu.pst, cb_addr_try, arg, cb_addr_try_timeout);
-        console.log(id, 'try', old.addr + menu.uri);
-    } else {
-        addr.url = old.addr;
-        get(old.addr + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
-        console.log(id, 'try', old.addr + menu.uri);
+        return;
     }
+
+    param.data = old.data;
+
+    if (old.date == now) {
+        select(id, old.menu);
+        console.log(id, 'use', param.data.addr);
+        return;
+    }
+
+    if (menu.pst != null) {
+        arg.post = true;
+        arg.data = menu.pst;
+    }
+
+    get(param.data.addr + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
+
+    console.log(id, 'try', param.data.addr + menu.uri);
 }
 
-function cb_page(url, xhr, arg) {
+function cb_page(url, html, arg) {
     let id = arg.id;
     let param = g_param[id];
     let page = param.page;
@@ -439,7 +457,6 @@ function cb_page(url, xhr, arg) {
     let reg = page.reg;
     let cnt = page.cnt;
     let fnt = page.fnt;
-    let html = xhr.responseText;
     let data = [];
     let ret;
 
@@ -465,23 +482,25 @@ function cb_page(url, xhr, arg) {
         console.log(id, 'page fnt error', html);
     }
 
-    video(data, page.img);
+    video(data, id);
 
     document.getElementById('page_num').innerText = g_page_id + '/' + g_page_cnt;
 }
 
 function page(id, uri, page_id) {
     let param = g_param[id];
+    let addr = param.addr;
     let page = param.page;
     let menu = param.menu;
-    let url = page.url;
+    let data = param.data;
+    let url = data.addr + uri;
 
     if (menu.pst == null) {
         get(url.replace('{URI}', uri).replace('{PAGE}', page_id + 1), cb_page, {id : id, page_id : page_id});
     } else {
         let res = JSON.parse(uri);
-        let data = {command:"WEB_GET_INFO", pageNumber:page_id + 1, RecordsPage:20, typeId:res.typeId, typeMid:1, type:1, languageType:"CN", content:res.content};
-        post(url, JSON.stringify(data), cb_page, {id : id, page_id : page_id});
+        let dat = {command:"WEB_GET_INFO", pageNumber:page_id + 1, RecordsPage:20, typeId:res.typeId, typeMid:1, type:1, languageType:"CN", content:res.content};
+        get(data.addr + menu.uri, cb_page, {post : true, data : JSON.stringify(dat), id : id, page_id : page_id});
     }
 }
 
@@ -517,11 +536,11 @@ function on_change(keydown) {
 }
 
 function main() {
-    //GM_deleteValue('17');
     //GM_deleteValue('88');
-    //GM_deleteValue('lm');
+    //GM_deleteValue('er');
+    //GM_deleteValue('hl');
+    //GM_deleteValue('ht');
     //GM_deleteValue('mm');
-    //GM_deleteValue('mt');
     //GM_deleteValue('xj');
 
     document.body = document.createElement('body');
