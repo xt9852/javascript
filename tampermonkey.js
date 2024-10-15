@@ -13,157 +13,265 @@
 // @require      https://cdn.jsdelivr.net/npm/crypto-js/crypto-js.min.js
 // @require      https://sm-static.trafficmanager.net/lib/fernetBrowser.min.js
 
-// @connect      github.io
-// @connect      88a1882.cc
+// @connect      88av88av4187.xyz
+// @connect      88av4252.xyz
 
 // @connect      trafficmanager.net
 // @connect      cucloud.cn
 // @connect      bcebos.com
-// @connect      aliyuncs.com
-// @connect      mm324.cc
+// @connect      415383.com
+// @connect      kaitingmart.com
 
-// @connect      hls5.ai
-// @connect      521057.com
-// @connect      032546.com
-// @connect      yangknn.com
-// @connect      xianggelilajc.com
+// @connect      ggsp4.cc
+// @connect      kbuu58.cc
+// @connect      a13.houduana1.cc
+
+// @connect      373450.com
+// @connect      808947.com
+// @connect      bssydt.com
 
 // @connect      github.com
-// @connect      kkht38.vip
-// @connect      ht29o.vip
-// @connect      ht30j.vip
+// @connect      kht75.vip
+// @connect      htsyzz5.vip
+// @connect      ht485op.vip
 
-// @connect      134.122.173.8
-// @connect      dxj5566.com
+// @connect      dxj5577.com
 // @connect      7wzx9.com
 // ==/UserScript==
 
 var g_hls = null;
 var g_video = null;
 var g_id = '';
-var g_uri = '';
+var g_url = '';
+var g_post = '';
 var g_page_id = 0;
 var g_page_cnt = 0;
-var g_param = {
-88 : {
+var g_site = {
+av : {
  data : {},
  addr : {
-  beg : 'https://v88avnetwork.github.io/88av.html',
-  reg : [ / href="(.+?)" target="_blank"/ ]},
+  beg : 'https://88av88av4187.xyz',//https://v88avnetwork.github.io/88av.html',
+  reg : [ (html)=>{ g_site.av.data.addr = /6<\/h2>[\s\S]+?href="(.+?)" target="_blank">http/.exec(html)[1];
+                    return g_site.av.data.addr + '/watch/65f401843720aeb8214b7a7f' },
+          (html)=>{ g_site.av.data.vod = /\["cncdn", ".+?", "(.+?)"\]/.exec(html)[1];
+                    return g_site.av.data.addr; } ]},
  menu : {
-  beg : '',
+  beg : '{ADDR}',
   reg :  /"?nav-item"?><a\s+href="?\/([^">]+)"?>([^<\s]+)/g,
-  uri : '/{1}/{PAGE}',
-  fnd : '/search/{INPUT}/{PAGE}' },
+  fnd : '{ADDR}/search/{INPUT}/{PAGE}',
+  url : '{ADDR}/{1}/{PAGE}' },
  page : {
   cnt : /data-total-page="(\d+)"/,
   reg : /<img alt="(.+?)"[\s\S]+?(https:\/\/.+?\/videos(\/.+?\/)cover\/5_505_259)/g,
-  fnt : (ret)=>{ return [ret[1], ret[2] + '.webp', 'https://yrxya.xyz/videos' + ret[3] + 'g.m3u8?h=949691b4955da2c']; }}},
-er : {
+  fnt : (ret)=>{ return [ret[1], ret[2] + '.webp', 'https://' + g_site.av.data.vod + '/videos' + ret[3] + 'g.m3u8?h=3121efe8979c635']; }}},
+dd : {
  data : {},
  addr : {
-  beg : 'https://fabu.trafficmanager.net/index.html',
+  beg : 'https://fbkp.trafficmanager.net:9527/index.html',
   reg : [ /href="(.+?)"/,
-          (html)=>{ return atob(/"url": "(.+?)"},\s];/.exec(html)[1]); },
-          (html)=>{ let e = /window.CONFIG ="(.+?)";/.exec(html)[1];
-                    let j = JSON.parse(fer(e));
-                    g_param.er.data.img = 'https://' + j.video_img_url;
-                    g_param.er.data.vod = 'https://' + j.video_play_url_list[0].url[0];
-                    return 'https://' + j.api_url; } ]},
+         (html)=>{ let m = atob(/"url": "(.+?)"/.exec(html)[1]); return m;},
+         (html)=>{ let e = /decode\("(.+?)"\)/.exec(html)[1];
+                   let d = decodeURIComponent(escape(atob(e))).split("|");
+                   return d[0]; },
+         (html)=>{ let e = /window.CONFIG = "(.+?)";/.exec(html)[1];
+                   let j = JSON.parse(fer(e));
+                   g_site.dd.data.img = 'https://' + j.video_img_url;
+                   g_site.dd.data.vod = 'https://' + j.video_play_url_list[0].url[0];
+                   return 'https://' + j.api_url; } ]},
  menu : {
-  beg : '/api/vod/tag_group?count=true&page=1&per_page=20',
-  ini : (html)=>{ return fer(JSON.parse(html)['x-data']); },
-  reg : /"id":(\d+),"name":"(.+?)"/g,
-  uri : '/api/vod/video?page={PAGE}&per_page=20&tag={1}',
-  fnd : '/search/?page={PAGE}&per_page=20&search={INPUT}' },
+  beg : '{ADDR}/api/vod/tag_group?page=1&per_page=1000&site_id=6&channel_id=523',
+  ini : (html)=>{ let d = fer(JSON.parse(html)['x-data']); return d;},
+  reg : (html)=>{ let m = [{title : 'find', url : g_site.dd.menu.fnd}];
+                  let d = JSON.parse(html);
+                  for (let i of [14, 18, 25]) {
+                      for (let j = 0; j < d.data.items[i].tag.length;j++) {
+                          if (d.data.items[i].tag[j].target == '' && d.data.items[i].tag[j].name.length > 2) {
+                              m.push({title : d.data.items[i].tag[j].name, url : '{ADDR}/api/vod/video?page={PAGE}&per_page=30&tag=' + d.data.items[i].tag[j].id});
+                          }
+                      }
+                  }
+                  return m; },
+  fnd : '{ADDR}/search/?page={PAGE}&per_page=30&search={INPUT}',
+  url : '{ADDR}/api/vod/video?page={PAGE}&per_page=30&tag={1}' },
  page : {
-  ini : (html)=>{ return fer(JSON.parse(html)['x-data']); },
-  cnt : (html)=>{ return Math.ceil(/"total":(\d+)/.exec(html)[1] / 20); },
-  reg : /"id":(\d+),"name":"(.+?)"/g,
+  ini : (html)=>{ let d = fer(JSON.parse(html)['x-data']); return d; },
+  cnt : (html)=>{ return Math.ceil(/"total":(\d+)/.exec(html)[1] / 30); },
+  reg : /"id":(\d+),"name":"([^"]+)","product/g,
   fnt : (ret)=>{ return [ret[2], ret[1], ret[1]]; },
-  img : (e)=>{ get(g_param.er.data.addr + '/api/vod/video/' + e.id, g_param.er.page.im1, {'xml':true, e:e, img:g_param.er.data.img, vod:g_param.er.data.img}); },
-  im1 : (url, html, arg)=>{ let j = fer(JSON.parse(html)['x-data']);
-                                arg.e.id = arg.vod + /"play_url":"(.+?)"/.exec(j)[1];
-                                get(arg.img + /"pic":"(.+?)"/.exec(j)[1], g_param.er.page.im2, arg); },
-  im2 : (url, html, arg)=>{ const e = html.split("@@@"); arg.e.poster = fer(e[0]) + e[1]; }}},
+  lz0 : (e)=>{ get(g_site.dd.data.addr + '/api/vod/video/' + e.id, g_site.dd.page.lz1, {'xml':true, e:e, img:g_site.dd.data.img, vod:g_site.dd.data.img}); },
+  lz1 : (url, html, arg)=>{ let j = fer(JSON.parse(html)['x-data']);
+                            arg.e.id = arg.vod + /"play_url":"(.+?)"/.exec(j)[1];
+                            get(arg.img + /"pic":"(.+?)"/.exec(j)[1], g_site.dd.page.lz2, arg); },
+  lz2 : (url, html, arg)=>{ let e = html.split("@@@");
+                            arg.e.poster = fer(e[0]) + e[1]; }}},
+gg : {
+ data : {},
+ addr : {
+  beg : 'http://ggsp4.cc',
+  reg : [ (html)=>{ let a = /href="\.(.+?)" class="enter-button"/.exec(html)[1];
+                    return 'http://ggsp4.cc' + a;
+                  },
+          (html)=>{ g_site.gg.data.addr = /urlMap = \[\s*"(https:\/\/.+?)\//.exec(html)[1];
+                    return g_site.gg.data.addr + '/js/base.js';
+                  },
+          (html)=>{ g_site.gg.data.api = /domain = "(https:\/\/.+?)\//.exec(html)[1];
+                    g_site.gg.data.key = /my = "(.+?)"/.exec(html)[1];
+                    return g_site.gg.data.addr;
+                  }]},
+ menu : {
+  beg : '{ADDR}/js/api.js',
+  reg : /"id": ((?!1)\d+),\s+"name": "(.+?)",/g,
+  fnd : '{API}/api.php/index/getShiPinList?currentPage={PAGE}&wd={INPUT}',
+  url : '{API}/api.php/index/getShiPinList?currentPage={PAGE}&id={1}' },
+ page : {
+  ini : (html)=>{ let key = CryptoJS.enc.Utf8.parse(g_site.gg.data.key);
+                  let iv = CryptoJS.enc.Utf8.parse(g_site.gg.data.key);
+                  let txt = html.split('"').join('').split('\\').join('');
+                  return CryptoJS.AES.decrypt(txt, key, { iv: iv, padding: CryptoJS.pad.Pkcs7 }).toString(CryptoJS.enc.Utf8); },
+  cnt : (html)=>{ return Math.ceil(/"count":(\d+)/.exec(html)[1] / 30); },
+  reg : /"vod_id":(\d+),"vod_pic":"(.+?)","vod_blurb":"(.+?)"/g,
+  fnt : (ret)=>{ return [uni(ret[3]), ret[2].split('\\').join(''), ret[1]]; },
+  lz0 : (e)=>{ get(g_site.gg.data.api + '/api.php/index/getDetail?id=' + e.id, g_site.gg.page.lz1, {'xml':true, e:e}); },
+  lz1 : (url, html, arg)=>{ let t = g_site.gg.page.ini(html);
+                            arg.e.id = /"vod_play_url":"(.+?)"/.exec(t)[1].split('\\').join(''); }}},
 hl : {
  data : {},
  addr : {
-  beg : 'https://hls5.ai',
-  reg : [ (html)=>{ g_param.hl.data.json = /CDN = "(.+?)"/.exec(html)[1]; return g_param.hl.data.json + 'json/diversion.js'; },
-          (html)=>{ g_param.hl.data.html = /"jumpDomain":"(.+?)"/.exec(html)[1]; return g_param.hl.data.json + 'json/config.js'; },
-          (html)=>{ console.log(html);let ret = /"fileDomain":"(.+?)","videoDomain":".+?\\n(.+?)\\.+?",.+?"jsonCDN":"(.+?)\/"/.exec(html);
-                    let data = g_param.hl.data; data.img = ret[1]; data.vod = ret[2]; data.json = ret[3]; return ret[3]; }]},
+  beg : 'https://373450.com/config.js', //https://300507.com/api/media-site/h5/externalLink/get/home/url, https://cgua4.tv
+  reg : [ /jumpUrl: '(.+?)'/,
+          (html)=>{ let a = /href="https:\/\/\w+\.(.+?)\//.exec(html);
+                    g_site.hl.data.vod = /2",2,"(.+?)"/.exec(html)[1];
+                    console.log(g_site.hl.data.vod);
+                    return 'https://jsonxz.' + a[1]; }]},
  menu : {
-  beg : '/json/zone_0.json',//'/json/label_all.json',//
-  ini : (html)=>{ return aes(html); },
-  reg : /"repositoryZoneId":"(\d+)","repositoryZoneName":"(.+?)"/g,///"labelId":"(\d+)","labelName":"(.+?)"/g },//
-  uri : '/json/rz_{1}_{PAGE}.json' },//'{ADDR}/json/rl_{URI}_{PAGE}.json',//
+  beg : '{ADDR}/pages/1/8/home/home.json',
+  ini : (html)=>{ let j = JSON.parse(html); j = JSON.parse(aes(j.json_data)); return JSON.stringify(j.tabs[2].channelList); },
+  reg : /"id":"(\d+)","name":"(.+?)"/g,
+  url : '{ADDR}/pages/1/8/water/{1}/{PAGE}.json' },
  page : {
-  ini : (html)=>{ return aes(html); },
-  cnt : (html)=>{ return Math.ceil(/"totalCount":(\d+)/.exec(html)[1] / 100); },
-  reg : /"repositoryId":"(\d+)","publisher".+?"repositoryName":"(.+?)".+?"repositoryCoverUrl":"(.+?)"/g,///"repositoryCoverUrl":"(.+?)",.+?,"repositoryName":"(.+?)",.+?,"shardingFileUrl":"(.+?)"/g,//
-  fnt : (ret)=>{ return [ret[2], g_param.hl.data.img + ret[3], ret[1] ]; }, // g_param.hl.data.html + '/json/' + ret[1] + '.html?t=s0'
-  img : (e)=>{ get(g_param.hl.data.html + '/json/' + e.id + '.html?t=s0', g_param.hl.page.im1, e); },
-  im1  : (url, html, arg)=>{ arg.id = g_param.hl.data.vod + /"shardingFileUrl":"(.+?)"/.exec(html)[1]; },
+  ini : (html)=>{ let j = JSON.parse(html); return aes(j.json_data); },
+  cnt : (html)=>{ get(rep('{ADDR}/pages/1/8/water/1838847758462455810/index.json', g_site.hl.data), g_site.hl.page.cn1, 0);
+                  return 0; },
+  cn1 : (url, html, arg)=>{ g_page_cnt = /(\d+),$/.exec(html)[1];
+                            document.getElementById('page_num').innerText = g_page_id + '/' + g_page_cnt; },
+  reg : /"id":"(\d+)","mainImgUrl":"(.+?)".+?"title":"(.+?)"/g,
+  fnt : (ret)=>{ return [ret[3], g_site.hl.data.vod + '/' + ret[2], ret[1] ]; },
+  lz0 : (e)=>{ get(g_site.hl.data.addr + '/pages/detail/' + e.id + '.json', g_site.hl.page.lz1, e); },
+  lz1  : (url, html, arg)=>{ let j = JSON.parse(html);
+                             j = JSON.parse(aes(j.json_data));
+                             arg.id = g_site.hl.data.vod + '/' + j.videoUrlList[0].videoUrl; },
   }},
 ht : {
  data : {},
  addr : {
   beg : 'https://github.com/htapp/htapp',
   reg : [ (html)=>{ return 'https://' + /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/.exec(html)[1]; },
-          (html)=>{ let u = /'(\d+)/.exec(html)[1], url = '', j = 0; for (; j < u.length; j += 4) url += String.fromCharCode(u.substr(j, 4) - 1000); return url + '/ht/index.html'; },
-          /targetUrls = \[\s+"([^"]+)/ ]},
+          (html)=>{ return /targetSites = \[\s+'(.+?)'/.exec(html)[1] + '/ht/index.html' },
+          /targetUrls = \[\s+"(.+?)"/ ]},
  menu : {
-  beg : '',
-  reg : /(type\/(?!game)(?!chigua)(?!nvyou).+?)" class="menu-link">(.+?)</g,
-  uri : '/{1}---{PAGE}',
-  fnd : '/search/{INPUT}/{PAGE}' },
+  beg : '{ADDR}',
+  reg : /(type\/(?!game)(?!chigua)(?!nvyou).+?)" vclass="menu-link">(.+?)</g,
+  fnd : '{ADDR}/search/{INPUT}/{PAGE}',
+  url : '{ADDR}/{1}---{PAGE}' },
  page : {
-  cnt : /(\d+), event/,
-  reg : /data-original="(https:\/\/[^/]+\/upload\/vod\/\d+-\d+\/[0-9a-f]+_xfile.jpg)".+?(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?vod-title">(.+?)</g,
-  fnt : (ret)=>{ return [str(ret[3]), ret[1], 'https://ww.huangke10.cn' + ret[2] + 'CDN/index.m3u8']; },
-  img : (e)=>{ get(e.poster, g_param.ht.page.im1, {'xml':true, bin:true, e:e}); },
-  im1 : (url, html, arg)=>{ let bin = [], data = new Uint8Array(html); for (let i = 0; i < data.byteLength; i++) bin += String.fromCharCode(data[i] ^ 0x88);
-                            arg.e.poster = 'data:image/jpeg;base64,' + window.btoa(bin); }}},
-mm : {
- data : {},
- addr : {
-  beg : 'https://fabu.trafficmanager.net/index.html',
-  reg : [ /href="(.+?)"/, (html)=>{ return atob(/猫咪看片", "url": "(.+?)"/.exec(html)[1]).replace('\n', ''); } ]},
- menu : {
-  beg : '/home.html',
-  reg :  /(tags\/.+?)\/index.html.+?data-onsite-or-offsite=""\s+>(.+?)</g,
-  uri : '/{1}/{PAGE}.html',
-  fnd : '/search/{INPUT}/{PAGE}.html' },
- page : {
-  cnt : />(\d+)<\/a>\s+<.+?>&#19979;&#19968;&#39029;/,
-  reg : /data-original="(https:\/\/.+?(\/.+?\/)cover\/cover_encry\.pip)[\s\S]*?<h3>([^<]+)/g,
-  fnt : (ret)=>{ return [str(ret[3]), ret[1], 'https://365play.dd99rr.live' + ret[2] + 'm3u8/maomi365.m3u8']; },
-  img : (e)=>{ get(e.poster, g_param.mm.page.im1, {xml:true,bin:true,e:e}); },
-  im1 : (url, html, arg)=>{ let bin = [], data = new Uint8Array(html); for (let i = 17; i < data.byteLength; i++) bin += String.fromCharCode(data[i]);
+  cnt : /, (\d+), event/,
+  reg : /data-original="(https:\/\/.+?\/upload\/vod\/\d+-\d+\/[0-9a-f]+_xfile.jpg)".+?(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?"v-title">(.+?)</g,
+  fnt : (ret)=>{ return [str(decodeURIComponent(ret[3])), decodeURIComponent(ret[1]), 'https://ts.xnmbhi.cn' + decodeURIComponent(ret[2]) + 'index.m3u8']; },
+  lz0 : (e)=>{ get(e.poster, g_site.ht.page.lz1, {'xml':true, bin:true, e:e}); },
+  lz1 : (url, html, arg)=>{ console.log(url);let bin = [], data = new Uint8Array(html);
+                            for (let i = 0; i < data.byteLength; i++) bin += String.fromCharCode(data[i] ^ 0x88);
                             arg.e.poster = 'data:image/jpeg;base64,' + window.btoa(bin); }}},
 xj : {
  data : {},
  addr : {
-  beg : 'https://134.122.173.8:8083/dxjgg/abs.js',
-  reg : [ (html)=>{ return 'https://www.' + /domainNames = \[".+?","(.+?)"/.exec(html)[1] + '/js/base41.js'; }, /"(https:\/\/.+?)\/forward"/ ]},
+  beg : 'https://dxj5577.com/js/base41.js', //https://134.122.173.8:8083/dxjgg/abs.js
+  reg : [ //(html)=>{ return 'https://www.' + /domainNames = \[".+?",".+?","(.+?)"/.exec(html)[1] + '/js/base41.js'; },
+          /"(https:\/\/.+?)\/forward"/ ]},
  menu : {
-  beg : '/getDataInit',
-  pst : JSON.stringify({name: "John", age: 31, city: "New York"}),
-  ini : (html)=>{ let res = JSON.parse(html); g_param.xj.data.group = res.data.macVodLinkMap; return res; },
-  reg : (html)=>{ let ret = []; for (let i = 0; i < 3; i++) for (let j in html.data.menu0ListMap[i].menu2List) {
-                  let m = html.data.menu0ListMap[i].menu2List[j];
-                  ret.push({uri : '{"typeId":'+m.typeId2+',"content":""}', title : m.typeName2}); } return ret; },
-  uri : '/forward',
-  fnd : '{"typeId":0,"content":"{INPUT}"}' },
+  beg : '{ADDR}/getDataInit',
+  ini : (html)=>{ let j = JSON.parse(html);
+                  g_site.xj.data.group = j.data.macVodLinkMap;
+                  return j; },
+  reg : (html)=>{ let o = [];
+                  for (let i = 0; i < 3; i++) {
+                      for (let j in html.data.menu0ListMap[i].menu2List) {
+                          let m = html.data.menu0ListMap[i].menu2List[j];
+                          o.push({title:m.typeName2,
+                                  url:'{ADDR}/forward',
+                                  post:'{"command":"WEB_GET_INFO","pageNumber":{PAGE},"RecordsPage":20,"typeId":'+m.typeId2+',"typeMid":1,"languageType":"CN","content":""}'});
+                      }
+                  }
+                  o.sort((a, b)=>a.title.localeCompare(b.title));
+                  o.unshift({title:'find',
+                             url:'{ADDR}/forward',
+                             post:'{"command":"WEB_GET_INFO","pageNumber":{PAGE},"RecordsPage":20,"typeId":0,"typeMid":1,"type":1,"languageType":"CN","content":"{INPUT}"}'});
+                  return o; },
+  pst : '{"name":"John","age":31,"city":"New York"}' },
  page : {
   cnt : /"pageAllNumber":(\d+)/,
   reg : /(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?vod_name":"(.+?)".+?vod_server_id":(\d+)/g,
-  fnt : (ret)=>{ let data = g_param.xj.data.group[ret[3]]; return [ret[2], data.PIC_LINK_1 + ret[1] + '1.jpg', data.LINK_1 + ret[1] + 'playlist.m3u8']; }}}};
+  fnt : (ret)=>{ let data = g_site.xj.data.group[ret[3]];
+                return [ret[2], data.PIC_LINK_1 + ret[1] + '1.jpg', data.LINK_1 + ret[1] + 'playlist.m3u8']; }}}};
+
+function main() {
+    //GM_deleteValue('av');
+    //GM_deleteValue('dd');
+    //GM_deleteValue('gg');
+    //GM_deleteValue('hl');
+    //GM_deleteValue('ht');
+    //GM_deleteValue('xj');
+    let d = GM_listValues();
+    d.sort((a, b)=>a.localeCompare(b));
+    for (let i of d) console.log(i, GM_getValue(i));
+
+    document.onkeydown = on_keydown;
+
+    document.body = document.createElement('body');
+
+    let div = document.createElement('div');
+    div.style = 'position:fixed;right:0px;';
+    document.body.appendChild(div);
+
+    let a = document.createElement('a');
+    a.innerText = '<';
+    a.href = 'javascript:void(0);';
+    a.onclick = on_pre;
+    div.appendChild(a);
+
+    a = document.createElement('a');
+    a.id = 'page_num';
+    a.innerText = '0/0';
+    div.appendChild(a);
+
+    a = document.createElement('a');
+    a.innerText = '>';
+    a.href = 'javascript:void(0);';
+    a.onclick = on_next;
+    div.appendChild(a);
+
+    let input = document.createElement('input');
+    input.id = 'input';
+    input.onkeydown = ()=>{ if (event.keyCode == 13) on_change(true); }
+    div.appendChild(input);
+
+    let menu = document.createElement('select');
+    menu.id = 'menu';
+    menu.onchange = ()=>{ on_change(false); }
+    div.appendChild(menu);
+
+    div = document.createElement('div');
+    div.id = 'content';
+    document.body.appendChild(div);
+
+    select('m3', [{title : 'play', url : '{INPUT}', data : ''}]);
+
+    for (let id in g_site) { addr(id); }
+}
 
 function aes(i) {
-    return CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt(i, CryptoJS.enc.Utf8.parse("6E31ECDEF3EEC0E6"), { mode: CryptoJS.mode.ECB }));
+    let k = CryptoJS.enc.Utf8.parse("zH3JDuCRXVGa3na7xbOqpx1bw6DAkbTP");
+    let d = CryptoJS.AES.decrypt(i, k, { iv : k, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+    return CryptoJS.enc.Utf8.stringify(d);
 }
 
 function fer(i) {
@@ -172,23 +280,23 @@ function fer(i) {
     return token.decode();
 }
 
-function img() {
+function lzd() {
     const observer = lozad('.lozad',{ load : (element)=>{
-        let param = g_param[element.getAttribute('img')];
+        let param = g_site[element.getAttribute('lz0')];
         if (param == null) return;
-        param.page.img(element);
+        param.page.lz0(element);
      }});
 
     observer.observe();
 }
 
-function str(str) {
+function str(i) {
     let pos = 0;
     let out = '';
 
-    for (let reg = /&#(x)?([\da-fA-F]+);/g, ret; ret = reg.exec(str); ) {
+    for (let reg = /&#(x)?([0-9a-fA-F]+);/g, ret; ret = reg.exec(i); ) {
         if (ret.index > pos) {
-            out += str.substring(pos, ret.index);
+            out += i.substring(pos, ret.index);
             pos = ret.index;
         }
 
@@ -196,11 +304,37 @@ function str(str) {
         pos += ret[0].length;
     }
 
-    if (pos < str.length) {
-        out += str.substring(pos, str.length);
+    if (pos < i.length) {
+        out += i.substring(pos, i.length);
     }
 
     return out;
+}
+
+function uni(i) {
+    let pos = 0;
+    let out = '';
+
+    for (let reg = /\\u([0-9a-f]{4})/g, ret; ret = reg.exec(i); ) {
+        if (ret.index > pos) {
+            out += i.substring(pos, ret.index);
+            pos = ret.index;
+        }
+
+        out += String.fromCodePoint(parseInt(ret[1], 16));
+        pos += ret[0].length;
+    }
+
+    if (pos < i.length) {
+        out += i.substring(pos, i.length);
+    }
+
+    return out;
+}
+
+function rep(i, map) {
+    for (let key in map) { i = i.replace('{' + key.toUpperCase() + '}', map[key]); }
+    return i;
 }
 
 function get(url, cb_load, arg, cb_timeout) {
@@ -222,7 +356,7 @@ function get(url, cb_load, arg, cb_timeout) {
             headers : { 'User-Agent' : 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1',
                         'Content-type' : 'application/json' },
             data : arg.post ? arg.data : null,
-            onload(xhr) { if (xhr.status == 200) cb_load(url, xhr.responseText, arg); else console.log(url, xhr); },
+            onload(xhr) { if (xhr.status != 404 && xhr.responseText.length > 0) cb_load(url, xhr.responseText, arg); else console.log(url, xhr); },
             onerror(xhr) { cb_timeout ? cb_timeout(url, xhr, arg) : console.log('error:' + url, xhr); },
             ontimeout(xhr) { cb_timeout ? cb_timeout(url, xhr, arg) : console.log('timeout:' + url, xhr); },
         };
@@ -254,7 +388,7 @@ function on_play() {
 }
 
 function video(data, id) {
-    let param = g_param[id];
+    let site = g_site[id];
 
     let div;
     let video;
@@ -273,11 +407,11 @@ function video(data, id) {
         video.style = 'cursor:pointer;max-height:500px';
         video.setAttribute('class', 'lozad');
         video.setAttribute('poster', data[i + 1]);
-        if (param != null && param.page != null && param.page.img != null) video.setAttribute('img', id);
+        if (site != null && site.page != null && site.page.lz0 != null) video.setAttribute('lz0', id);
         content.appendChild(video);
     }
 
-    img();
+    lzd();
 
     window.scrollTo(0, 0);
 }
@@ -293,100 +427,98 @@ function select(id, data) {
 
     for (let i = 0, option; i < data.length; i++) {
         option = document.createElement('option');
-        option.value = data[i].uri;
         option.innerText = data[i].title;
+        if (data[i].url) option.setAttribute('url', data[i].url);
+        if (data[i].post) option.setAttribute('post', data[i].post);
         optgroup.appendChild(option);
     }
 }
 
-function cb_addr_get_timeout(url, xhr, arg) {
+function cb_addr_timeout(url, xhr, arg) {
     let id = arg.id;
-    let times = arg.times[0];
-    let timeout = ++arg.times[2];
+    let step = arg.step;
+    let timeout = ++arg.timeout;
     let ret;
 
-    console.log(id, 'get', url, times, timeout, xhr.error ? xhr.error : 'timeout');
+    console.log(id, 'get', step, timeout, url, xhr.error ? xhr.error : 'timeout');
 
     if (/Refused to connect to ".+?"/.exec(xhr.error)) { return; }
 
     if (timeout >= 3) { return; }
 
-    get(url, cb_addr_get, arg, cb_addr_get_timeout);
+    get(url, cb_addr, arg, cb_addr_timeout);
 }
 
-function cb_addr_try_timeout(url, xhr, arg) {
+function cb_menu_timeout(url, xhr, arg) {
     let id = arg.id;
-    let times = arg.times[0];
-    let timeout = ++arg.times[2];
-    let param = g_param[id];
-    let addr = param.addr;
+    let timeout = ++arg.timeout;
+    let site = g_site[id];
+    let addr = site.addr;
 
-    console.log(id, 'try', url, times, timeout, xhr.error ? xhr.error : 'timeout');
+    console.log(id, 'try', timeout, url, xhr.error ? xhr.error : 'timeout');
 
     if (/Refused to connect to ".+?"/.exec(xhr.error)) { return; }
 
     if (timeout >= 3) {
-        if (times < 1) {
-            arg.times = [ times + 1, 0, 0 ];
-            get(addr.beg, cb_addr_get, arg, cb_addr_get_timeout);
-            console.log(id, 'get', addr.beg);
-        }
+        arg.step = 0;
+        arg.timeout = 0;
+        get(addr.beg, cb_addr, arg, cb_addr_timeout);
+        console.log(id, 'get', addr.beg);
         return;
     }
 
-    get(url, cb_addr_try, arg, cb_addr_try_timeout);
+    get(url, cb_addr, arg, cb_addr_timeout);
 }
 
-function cb_addr_get(url, html, arg) {
+function cb_addr(url, html, arg) {
     let id = arg.id;
     let date = arg.date;
-    let times = arg.times[0];
-    let step = arg.times[1];
-    let param = g_param[id];
-    let menu = param.menu;
-    let addr = param.addr;
-    let data = param.data;
-    let reg = addr.reg[step++];
+    let step = arg.step;
+    let site = g_site[id];
+    let menu = site.menu;
+    let addr = site.addr;
+    let data = site.data;
+    let reg = addr.reg[step];
 
     let tmp = (typeof(reg) == 'function') ? reg(html) : reg.exec(html)[1];
 
-    console.log(id, 'get', url, times, step, tmp);
+    console.log(id, step, url.padEnd(50), tmp);
 
-    if (step < addr.reg.length) {
-        arg.times = [ times, step, 0 ];
-        get(tmp, cb_addr_get, arg, cb_addr_get_timeout);
+    if (step < (addr.reg.length - 1)) {
+        arg.step = step + 1;
+        arg.timeout = 0;
+        get(tmp, cb_addr, arg, cb_addr_timeout);
         return;
     }
 
-    data.addr = tmp;
-
-    if (menu.pst != null) {
+    if (menu.pst) {
         arg.post = true;
         arg.data = menu.pst;
     }
 
-    get(tmp + menu.beg, cb_addr_try, arg, cb_addr_try_timeout);
+    data.addr = tmp;
+
+    get(rep(menu.beg, data), cb_menu, arg, cb_menu_timeout);
 }
 
-function cb_addr_try(url, html, arg) {
+function cb_menu(url, html, arg) {
     let id = arg.id;
     let date = arg.date;
-    let param = g_param[id];
-    let addr = param.addr;
-    let page = param.page;
-    let menu = param.menu;
-    let data = param.data;
+    let site = g_site[id];
+    let addr = site.addr;
+    let page = site.page;
+    let menu = site.menu;
+    let data = site.data;
     let ini = menu.ini;
     let reg = menu.reg;
-    let uri = menu.uri;
+    let end = menu.end;
     let fnd = menu.fnd;
     let item = [];
     let ret;
 
     if ((ret = /"refresh"[\s\S]+(https?:\/\/[^"\/]+)/.exec(html)) || (ret = /targetSites = \[\s+'([^']+)/.exec(html))) {
-        console.log(id, 'ref', ret[1] + menu.uri);
         data.addr = ret[1];
-        get(ret[1] + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
+        get(menu.beg.replace('{ADDR}', ret[1]), cb_addr, arg, cb_addr_timeout);
         return;
     }
 
@@ -394,14 +526,11 @@ function cb_addr_try(url, html, arg) {
         html = ini(html);
     }
 
-    if (fnd) {
-        item.push({uri : fnd, title : 'find'});
-    }
-
     if (typeof(reg) == 'function') {
         item.push(...reg(html));
     } else {
-        while (ret = reg.exec(html)) { item.push({uri : uri.replace('{1}', str(ret[1])), title : str(ret[2])}); }
+        if (fnd) { item.push({title:'find', url:fnd}); }
+        while (ret = reg.exec(html)) { item.push({title:str(decodeURIComponent(ret[2])), url:menu.url.replace('{1}', str(ret[1]))}); }
     }
 
     if (item.length <= 1) {
@@ -417,42 +546,32 @@ function cb_addr_try(url, html, arg) {
 }
 
 function addr(id) {
-    let param = g_param[id];
-    let addr = param.addr;
-    let menu = param.menu;
-    let page = param.page;
+    let site = g_site[id];
+    let addr = site.addr;
+    let menu = site.menu;
+    let page = site.page;
     let old = GM_getValue(id);
     let now = new Date().toLocaleDateString();
-    let arg = {id : id, date : now, times : [0, 0, 0]};
+    let arg = {id : id, date : now, step : 0, timeout : 0};
 
-    if (old == null) {
-        get(addr.beg, cb_addr_get, arg, cb_addr_get_timeout);
-        console.log(id, 'get', addr.beg);
-        return;
-    }
-
-    param.data = old.data;
-
-    if (old.date == now) {
+    if (old && old.date == now) {
+        site.data = old.data;
         select(id, old.menu);
-        console.log(id, 'use', param.data.addr);
         return;
     }
 
-    if (menu.pst != null) {
+    if (menu.pst) {
         arg.post = true;
         arg.data = menu.pst;
     }
 
-    get(param.data.addr + menu.uri, cb_addr_try, arg, cb_addr_try_timeout);
-
-    console.log(id, 'try', param.data.addr + menu.uri);
+    get(addr.beg, cb_addr, arg, cb_addr_timeout);
 }
 
 function cb_page(url, html, arg) {
     let id = arg.id;
-    let param = g_param[id];
-    let page = param.page;
+    let site = g_site[id];
+    let page = site.page;
     let ini = page.ini;
     let reg = page.reg;
     let cnt = page.cnt;
@@ -487,21 +606,20 @@ function cb_page(url, html, arg) {
     document.getElementById('page_num').innerText = g_page_id + '/' + g_page_cnt;
 }
 
-function page(id, uri, page_id) {
-    let param = g_param[id];
-    let addr = param.addr;
-    let page = param.page;
-    let menu = param.menu;
-    let data = param.data;
-    let url = data.addr + uri;
+function page(id, url, post, page_id) {
+    let site = g_site[id];
+    let addr = site.addr;
+    let page = site.page;
+    let menu = site.menu;
+    let data = site.data;
 
-    if (menu.pst == null) {
-        get(url.replace('{URI}', uri).replace('{PAGE}', page_id + 1), cb_page, {id : id, page_id : page_id});
-    } else {
-        let res = JSON.parse(uri);
-        let dat = {command:"WEB_GET_INFO", pageNumber:page_id + 1, RecordsPage:20, typeId:res.typeId, typeMid:1, type:1, languageType:"CN", content:res.content};
-        get(data.addr + menu.uri, cb_page, {post : true, data : JSON.stringify(dat), id : id, page_id : page_id});
-    }
+    url = rep(url, site.data);
+    url = url.replace('{PAGE}', page_id + 1);
+    if (post) post = post.replace('{PAGE}', page_id + 1);
+
+    console.log('url:', url, post);
+
+    get(url, cb_page, post ? {post : true, data : post, id : id, page_id : page_id} : {id : id, page_id : page_id});
 }
 
 function on_change(keydown) {
@@ -511,78 +629,51 @@ function on_change(keydown) {
     let title = option.innerText;
     let parent = option.parentNode;
     let find_id = parent.id;
+    let find = menu.options[find_id];
     let page_id = 0;
 
     g_id = parent.label;
+    g_post = '';
 
     if (g_id == 'm3') {
+        g_page_id = 0;
+        g_page_cnt = 0;
         video([input.value, '', input.value], '');
         input.value = '';
         return;
     }
 
-    if (!keydown) {
-        g_uri = (title == 'find') ? menu.value.replace('{INPUT}', input.value) : menu.value;
-    } else if (/^\d+$/.exec(input.value)) {
+    if (keydown && /^\d+$/.exec(input.value)) {
         page_id = Number(input.value);
     } else {
-        g_uri = menu.options[find_id].value.replace('{INPUT}', input.value);
-        menu.selectedIndex = find_id;
+        if (keydown || title == 'find') {
+            menu.selectedIndex = find_id;
+            g_url = find.getAttribute('url');
+            g_post = find.getAttribute('post');
+        } else {
+            g_url = option.getAttribute('url');
+            g_post = option.getAttribute('post');
+        }
+
+        g_url = g_url.replace('{INPUT}', input.value);
+        if (g_post) g_post = g_post.replace('{INPUT}', input.value);
     }
 
-    console.log(g_id, g_uri, page_id);
-
-    page(g_id, g_uri, page_id);
+    page(g_id, g_url, g_post, page_id);
 }
 
-function main() {
-    //GM_deleteValue('88');
-    //GM_deleteValue('er');
-    //GM_deleteValue('hl');
-    //GM_deleteValue('ht');
-    //GM_deleteValue('mm');
-    //GM_deleteValue('xj');
+function on_pre() {
+    page(g_id, g_url, g_post, ((g_page_id == 0) ? g_page_cnt : g_page_id) - 1);
+}
 
-    document.body = document.createElement('body');
+function on_next() {
+    page(g_id, g_url, g_post, (g_page_id == g_page_cnt - 1) ? 0 : (g_page_id + 1));
+}
 
-    let div = document.createElement('div');
-    div.style = 'position:fixed; right:0px;';
-    document.body.appendChild(div);
-
-    let a = document.createElement('a');
-    a.innerText = '<';
-    a.href = 'javascript:void(0);';
-    a.onclick = ()=>{ page(g_id, g_uri, ((g_page_id == 0) ? g_page_cnt : g_page_id) - 1); }
-    div.appendChild(a);
-
-    a = document.createElement('a');
-    a.id = 'page_num';
-    a.innerText = '0/0';
-    div.appendChild(a);
-
-    a = document.createElement('a');
-    a.innerText = '>';
-    a.href = 'javascript:void(0);';
-    a.onclick = ()=>{ page(g_id, g_uri, (g_page_id == g_page_cnt - 1) ? 0 : (g_page_id + 1)); }
-    div.appendChild(a);
-
-    let input = document.createElement('input');
-    input.id = 'input';
-    input.onkeydown = ()=>{ if (event.keyCode == 13) on_change(true); }
-    div.appendChild(input);
-
-    let menu = document.createElement('select');
-    menu.id = 'menu';
-    menu.onchange = ()=>{ on_change(false); }
-    div.appendChild(menu);
-
-    div = document.createElement('div');
-    div.id = 'content';
-    document.body.appendChild(div);
-
-    select('m3', [{title : 'play', uri : '{INPUT}'}]);
-
-    for (let id in g_param) { addr(id); }
+function on_keydown(evt) {
+    evt = (evt) ? evt : window.event;
+    if (evt.keyCode == 37) on_pre();
+    if (evt.keyCode == 39) on_next();
 }
 
 main();
