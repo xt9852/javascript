@@ -12,30 +12,33 @@
 // @require      https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js
 // @require      https://cdn.jsdelivr.net/npm/crypto-js/crypto-js.min.js
 // @require      https://sm-static.trafficmanager.net/lib/fernetBrowser.min.js
-
+// @connect      --av--
 // @connect      88av88av4187.xyz
-// @connect      88av4252.xyz
-
+// @connect      88av4253.xyz
+// @connect      --dd--
 // @connect      trafficmanager.net
 // @connect      cucloud.cn
 // @connect      bcebos.com
-// @connect      415383.com
+// @connect      415739.com
 // @connect      kaitingmart.com
-
+// @connect      --gg--
 // @connect      ggsp4.cc
-// @connect      kbuu58.cc
-// @connect      a13.houduana1.cc
-
+// @connect      kbuu64.cc
+// @connect      a14.houduana1.cc
+// @connect      --hl--
+// @connect      300507.com
+// @connect      cgua4.tv
 // @connect      373450.com
-// @connect      808947.com
+// @connect      984501.com
 // @connect      bssydt.com
-
+// @connect      --ht--
 // @connect      github.com
 // @connect      kht75.vip
 // @connect      htsyzz5.vip
 // @connect      ht485op.vip
-
-// @connect      dxj5577.com
+// @connect      ht489op.vip
+// @connect      --xj--
+// @connect      dxj5588.com
 // @connect      7wzx9.com
 // ==/UserScript==
 
@@ -115,8 +118,10 @@ gg : {
                     return g_site.gg.data.addr + '/js/base.js';
                   },
           (html)=>{ g_site.gg.data.api = /domain = "(https:\/\/.+?)\//.exec(html)[1];
-                    g_site.gg.data.key = /my = "(.+?)"/.exec(html)[1];
-                    return g_site.gg.data.addr;
+                    g_site.gg.data.key = CryptoJS.enc.Utf8.parse(/my = "(.+?)"/.exec(html)[1]);
+                    return g_site.gg.data.api;
+                  },
+          (html)=>{ return g_site.gg.data.addr;
                   }]},
  menu : {
   beg : '{ADDR}/js/api.js',
@@ -124,32 +129,37 @@ gg : {
   fnd : '{API}/api.php/index/getShiPinList?currentPage={PAGE}&wd={INPUT}',
   url : '{API}/api.php/index/getShiPinList?currentPage={PAGE}&id={1}' },
  page : {
-  ini : (html)=>{ let key = CryptoJS.enc.Utf8.parse(g_site.gg.data.key);
-                  let iv = CryptoJS.enc.Utf8.parse(g_site.gg.data.key);
-                  let txt = html.split('"').join('').split('\\').join('');
-                  return CryptoJS.AES.decrypt(txt, key, { iv: iv, padding: CryptoJS.pad.Pkcs7 }).toString(CryptoJS.enc.Utf8); },
+  ini : (html)=>{ let txt = html.split('"').join('').split('\\').join('');
+                  return aes(txt, g_site.gg.data.key); },
   cnt : (html)=>{ return Math.ceil(/"count":(\d+)/.exec(html)[1] / 30); },
   reg : /"vod_id":(\d+),"vod_pic":"(.+?)","vod_blurb":"(.+?)"/g,
-  fnt : (ret)=>{ return [uni(ret[3]), ret[2].split('\\').join(''), ret[1]]; },
+  fnt : (ret)=>{ return [str(ret[3], true), ret[2].split('\\').join(''), ret[1]]; },
   lz0 : (e)=>{ get(g_site.gg.data.api + '/api.php/index/getDetail?id=' + e.id, g_site.gg.page.lz1, {'xml':true, e:e}); },
   lz1 : (url, html, arg)=>{ let t = g_site.gg.page.ini(html);
                             arg.e.id = /"vod_play_url":"(.+?)"/.exec(t)[1].split('\\').join(''); }}},
 hl : {
  data : {},
  addr : {
-  beg : 'https://373450.com/config.js', //https://300507.com/api/media-site/h5/externalLink/get/home/url, https://cgua4.tv
-  reg : [ /jumpUrl: '(.+?)'/,
-          (html)=>{ let a = /href="https:\/\/\w+\.(.+?)\//.exec(html);
-                    g_site.hl.data.vod = /2",2,"(.+?)"/.exec(html)[1];
-                    console.log(g_site.hl.data.vod);
-                    return 'https://jsonxz.' + a[1]; }]},
+  beg : 'https://300507.com/api/media-site/h5/externalLink/get/home/url',
+  reg : [ /"data":"(.+?)"/,
+          (html)=>{ return 'https://373450.com/' + /script src="(.+?)"/.exec(html)[1]; },
+          /jumpUrl: '(.+?)'/,
+          (html)=>{ g_site.hl.data.vod = /2",2,"(.+?)"/.exec(html)[1];
+                    let a = /href="https:\/\/\w+\.(.+?)\//.exec(html)[1];
+                    g_site.hl.data.add = 'https://jsonxz.' + a;
+                    return /crossorigin href="(.+?)"/.exec(html)[1]; },
+         ( html)=>{ let k = /defaultSecretKey:"(.+?)"/.exec(html)[1];
+                    g_site.hl.data.key = CryptoJS.enc.Utf8.parse(k);
+                    return g_site.hl.data.add; }]},
  menu : {
   beg : '{ADDR}/pages/1/8/home/home.json',
-  ini : (html)=>{ let j = JSON.parse(html); j = JSON.parse(aes(j.json_data)); return JSON.stringify(j.tabs[2].channelList); },
+  ini : (html)=>{ let j = JSON.parse(html);
+                  j = JSON.parse(aes(j.json_data, g_site.hl.data.key));
+                  return JSON.stringify(j.tabs[2].channelList); },
   reg : /"id":"(\d+)","name":"(.+?)"/g,
   url : '{ADDR}/pages/1/8/water/{1}/{PAGE}.json' },
  page : {
-  ini : (html)=>{ let j = JSON.parse(html); return aes(j.json_data); },
+  ini : (html)=>{ let j = JSON.parse(html); return aes(j.json_data, g_site.hl.data.key); },
   cnt : (html)=>{ get(rep('{ADDR}/pages/1/8/water/1838847758462455810/index.json', g_site.hl.data), g_site.hl.page.cn1, 0);
                   return 0; },
   cn1 : (url, html, arg)=>{ g_page_cnt = /(\d+),$/.exec(html)[1];
@@ -158,7 +168,7 @@ hl : {
   fnt : (ret)=>{ return [ret[3], g_site.hl.data.vod + '/' + ret[2], ret[1] ]; },
   lz0 : (e)=>{ get(g_site.hl.data.addr + '/pages/detail/' + e.id + '.json', g_site.hl.page.lz1, e); },
   lz1  : (url, html, arg)=>{ let j = JSON.parse(html);
-                             j = JSON.parse(aes(j.json_data));
+                             j = JSON.parse(aes(j.json_data, g_site.hl.data.key));
                              arg.id = g_site.hl.data.vod + '/' + j.videoUrlList[0].videoUrl; },
   }},
 ht : {
@@ -166,8 +176,9 @@ ht : {
  addr : {
   beg : 'https://github.com/htapp/htapp',
   reg : [ (html)=>{ return 'https://' + /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/.exec(html)[1]; },
-          (html)=>{ return /targetSites = \[\s+'(.+?)'/.exec(html)[1] + '/ht/index.html' },
-          /targetUrls = \[\s+"(.+?)"/ ]},
+          (html)=>{ return /targetSites = \[\s+'(.+?)'/.exec(html)[1] + '/ht/index.html'; },
+          (html)=>{ return /targetUrls = \[\s+"(.+?)"/.exec(html)[1]; },
+          (html)=>{ return /targetSites = \[\s+'(.+?)'/.exec(html)[1]; }]},
  menu : {
   beg : '{ADDR}',
   reg : /(type\/(?!game)(?!chigua)(?!nvyou).+?)" vclass="menu-link">(.+?)</g,
@@ -184,7 +195,7 @@ ht : {
 xj : {
  data : {},
  addr : {
-  beg : 'https://dxj5577.com/js/base41.js', //https://134.122.173.8:8083/dxjgg/abs.js
+  beg : 'https://dxj5588.com/js/base41.js', //https://134.122.173.8:8083/dxjgg/abs.js
   reg : [ //(html)=>{ return 'https://www.' + /domainNames = \[".+?",".+?","(.+?)"/.exec(html)[1] + '/js/base41.js'; },
           /"(https:\/\/.+?)\/forward"/ ]},
  menu : {
@@ -268,8 +279,8 @@ function main() {
     for (let id in g_site) { addr(id); }
 }
 
-function aes(i) {
-    let k = CryptoJS.enc.Utf8.parse("zH3JDuCRXVGa3na7xbOqpx1bw6DAkbTP");
+function aes(i, k) {
+    //let k = CryptoJS.enc.Utf8.parse("zH3JDuCRXVGa3na7xbOqpx1bw6DAkbTP");
     let d = CryptoJS.AES.decrypt(i, k, { iv : k, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
     return CryptoJS.enc.Utf8.stringify(d);
 }
@@ -290,38 +301,18 @@ function lzd() {
     observer.observe();
 }
 
-function str(i) {
+function str(i, u) {
     let pos = 0;
     let out = '';
+    let reg = (u == true) ? /\\u([0-9a-f]{4})/g : /&#(x)?([0-9a-fA-F]+);/g;
 
-    for (let reg = /&#(x)?([0-9a-fA-F]+);/g, ret; ret = reg.exec(i); ) {
+    for (let ret; ret = reg.exec(i); ) {
         if (ret.index > pos) {
             out += i.substring(pos, ret.index);
             pos = ret.index;
         }
 
-        out += String.fromCharCode((ret[1] == 'x') ? parseInt(ret[2], 16) : ret[2]);
-        pos += ret[0].length;
-    }
-
-    if (pos < i.length) {
-        out += i.substring(pos, i.length);
-    }
-
-    return out;
-}
-
-function uni(i) {
-    let pos = 0;
-    let out = '';
-
-    for (let reg = /\\u([0-9a-f]{4})/g, ret; ret = reg.exec(i); ) {
-        if (ret.index > pos) {
-            out += i.substring(pos, ret.index);
-            pos = ret.index;
-        }
-
-        out += String.fromCodePoint(parseInt(ret[1], 16));
+        out += (u == true) ? String.fromCodePoint(parseInt(ret[1], 16)) : String.fromCharCode((ret[1] == 'x') ? parseInt(ret[2], 16) : ret[2]);
         pos += ret[0].length;
     }
 
