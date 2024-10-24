@@ -14,16 +14,16 @@
 // @require      https://cdn.jsdelivr.net/npm/crypto-js/crypto-js.min.js
 // @connect      --av--
 // @connect      88av88av4187.xyz
-// @connect      88av4319.cc
+// @connect      88av4320.cc
 // @connect      --dd--
 // @connect      trafficmanager.net
 // @connect      cucloud.cn
 // @connect      bcebos.com
-// @connect      411684.com
+// @connect      411687.com
 // @connect      kaitingmart.com
 // @connect      --gg--
 // @connect      ggsp4.cc
-// @connect      kbuu108.cc
+// @connect      kbuu110.cc
 // @connect      a23.houduana1.cc
 // @connect      --hd--
 // @connect      cw101.org
@@ -38,7 +38,7 @@
 // @connect      github.com
 // @connect      kht76.vip
 // @connect      htsyzz5.vip
-// @connect      ht505op.vip
+// @connect      ht509op.vip
 // @connect      --xj--
 // @connect      134.122.173.8
 // @connect      dxj5588.com
@@ -350,18 +350,18 @@ var g_web = {
             fnd : '{ADDR}/search/{INPUT}/{PAGE}',
             url : '{ADDR}/{1}---{PAGE}',
             beg : '{ADDR}',
-            dec : (html, arg)=>{ return html
+            dec : (html, arg)=>{ return str(html);
                                },
             fun : [ /(type\/(?!game)(?!chigua)(?!nvyou).+?)" vclass="menu-link">(.+?)</g
                   ]
         },
         page : {
-            dec : (html, arg)=>{ return html;
+            dec : (html, arg)=>{ return str(html);
                                },
             cnt : (html, arg)=>{ return /(\d+), event/.exec(html)[1];
                                },
             reg : /data-original="(https:\/\/.+?\/upload\/vod\/\d+-\d+\/[0-9a-f]+_xfile.jpg)".+?(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?"v-title">(.+?)</g,
-            fun : (ret)=>{ return [str(decodeURIComponent(ret[3])), decodeURIComponent(ret[1]), 'https://ts.xnmbhi.cn' + decodeURIComponent(ret[2]) + 'index.m3u8'];
+            fun : (ret)=>{ return [ret[3], ret[1], 'https://ts.xnmbhi.cn' + ret[2] + 'index.m3u8'];
                          },
             lzd : [ (e)=>{ get(e.poster, g_web.ht.page.lzd[1], {'xml':true, bin:true, e:e});
                          },
@@ -520,7 +520,7 @@ function utf(t) {
 function str(t, u) {
     let pos = 0;
     let out = '';
-    let reg = (u == true) ? /\\u([0-9a-f]{4})/g : /&#(x)?([0-9a-fA-F]+);/g;
+    let reg = u ? /\\u([0-9a-f]{4})/g : /&#(x)?([0-9a-fA-F]+);/g;
 
     for (let ret; ret = reg.exec(t); ) {
         if (ret.index > pos) {
@@ -528,7 +528,7 @@ function str(t, u) {
             pos = ret.index;
         }
 
-        out += (u == true) ? String.fromCodePoint(parseInt(ret[1], 16)) : String.fromCharCode((ret[1] == 'x') ? parseInt(ret[2], 16) : ret[2]);
+        out += u ? String.fromCodePoint(parseInt(ret[1], 16)) : String.fromCharCode((ret[1] == 'x') ? parseInt(ret[2], 16) : ret[2]);
         pos += ret[0].length;
     }
 
@@ -539,9 +539,9 @@ function str(t, u) {
     return out;
 }
 
-function rep(i, map) {
-    for (let key in map) { i = i.replace('{' + key.toUpperCase() + '}', map[key]); }
-    return i;
+function rep(t, map) {
+    for (let key in map) { t = t.replace('{' + key.toUpperCase() + '}', map[key]); }
+    return t;
 }
 
 function get(url, cb_load, arg, cb_timeout) {
@@ -716,7 +716,8 @@ function cb_menu(url, html, arg, xhr) {
     } else {
         item.push({title:'find', url:fnd});
         while (ret = fun[0].exec(html)) {
-            item.push({title:str(decodeURIComponent(ret[2])), url:menu.url.replace('{1}', str(ret[1]))}); }
+            item.push({title:ret[2], url:rep(menu.url, ret)});
+        }
     }
 
     if (item.length <= 1) {
