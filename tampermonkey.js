@@ -14,31 +14,32 @@
 // @require      https://cdn.jsdelivr.net/npm/crypto-js/crypto-js.min.js
 // @connect      --av--
 // @connect      88av88av4187.xyz
-// @connect      88av4320.cc
+// @connect      88av4261.xyz
 // @connect      --dd--
 // @connect      trafficmanager.net
 // @connect      cucloud.cn
 // @connect      bcebos.com
-// @connect      411687.com
+// @connect      411758.com
 // @connect      kaitingmart.com
 // @connect      --gg--
 // @connect      ggsp4.cc
-// @connect      kbuu110.cc
-// @connect      a23.houduana1.cc
+// @connect      kbuu127.cc
+// @connect      a27.houduana1.cc
 // @connect      --hd--
 // @connect      cw101.org
 // @connect      --hl--
 // @connect      300507.com
-// @connect      cgua4.tv
-// @connect      474932.com
-// @connect      593700.com
+// @connect      18g.vip
+// @connect      564746.com
+// @connect      932039.com
+// @connect      284195.com
 // @connect      nbqygl.com
 // @connect      584095.com
 // @connect      --ht--
 // @connect      github.com
 // @connect      kht76.vip
 // @connect      htsyzz5.vip
-// @connect      ht509op.vip
+// @connect      ht513op.vip
 // @connect      --xj--
 // @connect      134.122.173.8
 // @connect      dxj5588.com
@@ -58,8 +59,10 @@ var g_web = {
         data : {},
         addr : {
             beg : 'https://88av88av4187.xyz',
-            fun : [ (url, html, arg, xhr)=>{ g_web.av.data.addr = /6<\/h2>[\s\S]+?href="(.+?)" target="_blank">http/.exec(html)[1];
-                                             return g_web.av.data.addr + '/watch/65f401843720aeb8214b7a7f'
+            fun : [ (url, html, arg, xhr)=>{ g_web.av.data.addr = /7<\/h2>[\s\S]+?href="(.+?)"/.exec(html)[1];
+                                             return g_web.av.data.addr;
+                                           },
+                    (url, html, arg, xhr)=>{ return g_web.av.data.addr + /href=(\/watch\/.+?) /.exec(html)[1];
                                            },
                     (url, html, arg, xhr)=>{ g_web.av.data.vod = /\["cncdn", ".+?", "(.+?)"\]/.exec(html)[1];
                                              return g_web.av.data.addr;
@@ -76,9 +79,9 @@ var g_web = {
                    ]
         },
         page : {
-            dec : (html, arg)=>{ return html
+            dec : (html, arg)=>{ return html;
                                },
-            cnt : (html, arg)=>{ return /data-total-page="(\d+)"/.exec(html)[1];
+            cnt : (html, arg)=>{ let ret = /data-total-page="(\d+)"/.exec(html); return ret ? ret[1] : 0;
                                },
             reg : /<img alt="(.+?)"[\s\S]+?(https:\/\/.+?\/videos(\/.+?\/)cover\/5_505_259)/g ,
             fun : (ret)=>{ return [ret[1], ret[2] + '.webp', 'https://' + g_web.av.data.vod + '/videos' + ret[3] + 'g.m3u8?h=3121efe8979c635'];
@@ -131,7 +134,7 @@ var g_web = {
         page : {
             dec : (html, arg)=>{ return fer(JSON.parse(html)['x-data'], g_web.dd.data.key);
                                },
-            cnt : (html, arg)=>{ return Math.ceil(/"total":(\d+)/.exec(html)[1] / 30);
+            cnt : (html, arg)=>{ let ret = /"total":(\d+)/.exec(html); return ret ? Math.ceil(ret[1] / 30) : 0;
                                },
             reg : /"id":(\d+),"name":"([^"]+)","product/g,
             fun : (ret)=>{ return [ret[2], ret[1], ret[1]];
@@ -178,7 +181,7 @@ var g_web = {
             dec : (html, arg)=>{ let txt = html.split('"').join('').split('\\').join('');
                                  return aes(txt, g_web.gg.data.key);
                                },
-            cnt : (html, arg)=>{ return Math.ceil(/"count":(\d+)/.exec(html)[1] / 30);
+            cnt : (html, arg)=>{ let ret = /"count":(\d+)/.exec(html); return ret ? Math.ceil(ret[1] / 30) : 0;
                                },
             reg : /"vod_id":(\d+),"vod_pic":"(.+?)","vod_blurb":"(.+?)"/g,
             fun : (ret)=>{ return [str(ret[3], true), ret[2].split('\\').join(''), ret[1]];
@@ -243,14 +246,19 @@ var g_web = {
         page : {
             dec : (html, arg)=>{ return utf(atob(/ec='(.+?)'/.exec(html)[1]));
                                },
-            cnt : (html, arg)=>{ return arg.find ? Math.ceil(/class="pagenum">[^(]+\([^\d]+(\d+)/.exec(html)[1] / 60) : arg.page_cnt;
+            cnt : (html, arg)=>{ if (arg.find) {
+                                     let ret = /class="pagenum">[^(]+\([^\d]+(\d+)/.exec(html);
+                                     return ret ? Math.ceil(ret[1] / 60) : 0
+                                 } else {
+                                     return arg.page_cnt;
+                                 }
                                },
             reg : /(https:\/\/[^/]+\/[^/]+\/images\/[^'"]+)[\s\S]+?<a href="\/watch\?v=(.+?)" itemprop="url">(\s+<span itemprop="name">)?([^<]+)</g,
             fun : (ret)=>{ return [ret[4], ret[1], ret[2]];
                          },
             lzd : [ (e)=>{ e.id = g_web.hd.data.addr + '/pv/' + e.id + '.m3u8?px=' +
                                   btoa(e.id.substring(2, 6) + 'prefix=/' + e.id + '/preview&server=tc&id=' + e.id +
-                                       '&ip=240e:343:1c6d:f000:69d5:f56e:5705:9742&expire=' + (Math.round(Date.now() / 1000) + 600));
+                                       '&ip=240e:343:1c6d:f000:448e:854:f938:e05e&expire=' + (Math.round(Date.now() / 1000) + 600));
                            get(e.poster, g_web.hd.page.lzd[1], {'xml':true, e:e});
                          },
                     (url, html, arg, xhr)=>{ arg.e.poster = 'data:image/jpeg;base64,' + html.substring(6, html.length - 2);
@@ -262,7 +270,11 @@ var g_web = {
         data : {},
         addr : {
             beg : 'https://300507.com/api/media-site/h5/externalLink/get/home/url',
-            fun : [ (url, html, arg, xhr)=>{ return 'https://cgua4.tv';//"data":"(.+?)"/.exec(html)[1];
+            fun : [ (url, html, arg, xhr)=>{ console.log(html);return /"data":"(.+?)"/.exec(html)[1];
+                                           },
+                    (url, html, arg, xhr)=>{ return /"number-din" href="(.+?)"/.exec(html)[1];
+                                           },
+                    (url, html, arg, xhr)=>{ return /"number-din" href="(.+?)"/.exec(html)[1];
                                            },
                     (url, html, arg, xhr)=>{ return xhr.finalUrl + /script src="(.+?)"/.exec(html)[1];
                                            },
@@ -358,7 +370,7 @@ var g_web = {
         page : {
             dec : (html, arg)=>{ return str(html);
                                },
-            cnt : (html, arg)=>{ return /(\d+), event/.exec(html)[1];
+            cnt : (html, arg)=>{ let ret = /(\d+), event/.exec(html); return ret ? ret[1] : 0;
                                },
             reg : /data-original="(https:\/\/.+?\/upload\/vod\/\d+-\d+\/[0-9a-f]+_xfile.jpg)".+?(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?"v-title">(.+?)</g,
             fun : (ret)=>{ return [ret[3], ret[1], 'https://ts.xnmbhi.cn' + ret[2] + 'index.m3u8'];
@@ -405,7 +417,7 @@ var g_web = {
         page : {
             dec : (html, arg)=>{ return html;
                                },
-            cnt : (html, arg)=>{ return /"pageAllNumber":(\d+)/.exec(html)[1];
+            cnt : (html, arg)=>{ let ret = /"pageAllNumber":(\d+)/.exec(html); return ret ? ret[1] : 0;
                                },
             reg : /(\/video\/m3u8\/\d+\/\d+\/[0-9a-f]+\/).+?vod_name":"(.+?)".+?vod_server_id":(\d+)/g,
             fun : (ret)=>{ let data = g_web.xj.data.group[ret[3]];
@@ -425,15 +437,15 @@ function main() {
     //GM_deleteValue('ht');
     //GM_deleteValue('xj');
 
-    //function set(i) {
-    //    console.log(i);
-    //    let v = GM_getValue(i);
-    //    console.log('old', v);
-    //    v.date = '2024/10/23';
-    //    GM_setValue(i, v);
-    //    v = GM_getValue(i);
-    //    console.log('new', v);
-    //}
+    function set(i) {
+        console.log(i);
+        let v = GM_getValue(i);
+        console.log('old', v);
+        v.date = '2024/10/23';
+        GM_setValue(i, v);
+        v = GM_getValue(i);
+        console.log('new', v);
+    }
 
     //set('av');
     //set('dd');
@@ -645,7 +657,7 @@ function cb_timeout(url, xhr, arg) {
     let web = g_web[id];
     let addr = web.addr;
 
-    console.log(id, step, timeout, url, xhr.error ? xhr.error : 'timeout');
+    console.log(id, step, timeout, url, xhr.error ? xhr.error : xhr);
 
     if (/Refused to connect to ".+?"/.exec(xhr.error)) return;
 
