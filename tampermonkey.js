@@ -19,27 +19,28 @@
 // @connect      trafficmanager.net
 // @connect      cucloud.cn
 // @connect      bcebos.com
-// @connect      411758.com
+// @connect      411840.com
 // @connect      kaitingmart.com
+// @connect      xuezhumall.com
 // @connect      --gg--
 // @connect      ggsp4.cc
-// @connect      kbuu127.cc
-// @connect      a27.houduana1.cc
+// @connect      kbuu142.cc
+// @connect      a30.houduana1.cc
 // @connect      --hd--
 // @connect      cw101.org
 // @connect      --hl--
 // @connect      300507.com
-// @connect      18g.vip
-// @connect      564746.com
-// @connect      932039.com
-// @connect      284195.com
+// @connect      hei4.tv
+// @connect      786022.com
+// @connect      fkrdl.com
+// @connect      567790.com
 // @connect      nbqygl.com
 // @connect      584095.com
 // @connect      --ht--
 // @connect      github.com
 // @connect      kht76.vip
 // @connect      htsyzz5.vip
-// @connect      ht513op.vip
+// @connect      ht519op.vip
 // @connect      --xj--
 // @connect      134.122.173.8
 // @connect      dxj5588.com
@@ -53,7 +54,7 @@ var g_url = '';
 var g_post = '';
 var g_page_id = 0;
 var g_page_cnt = 0;
-var g_key = ['av', 'dd', 'gg', 'hd', 'hl', 'ht', 'xj' ];
+var g_key = ['av', 'dd', 'gg', 'hd', 'hl', 'xj', 'ht' ];
 var g_web = {
     av : {
         data : {},
@@ -161,7 +162,7 @@ var g_web = {
                                              return g_web.gg.data.addr + '/js/base.js';
                                            },
                     (url, html, arg, xhr)=>{ g_web.gg.data.api = /domain = "(https:\/\/.+?)\//.exec(html)[1];
-                                             g_web.gg.data.key = CryptoJS.enc.Utf8.parse(/my = "(.+?)"/.exec(html)[1]);
+                                             g_web.gg.data.key = /my = "(.+?)"/.exec(html)[1];
                                              return g_web.gg.data.api;
                                            },
                     (url, html, arg, xhr)=>{ return g_web.gg.data.addr;
@@ -269,30 +270,23 @@ var g_web = {
     hl : {
         data : {},
         addr : {
-            beg : 'https://300507.com/api/media-site/h5/externalLink/get/home/url',
-            fun : [ (url, html, arg, xhr)=>{ console.log(html);return /"data":"(.+?)"/.exec(html)[1];
+            beg : 'https://300507.com/api/media-site/h5/externalLink/get/home/url?domain=https://300507.com',
+            fun : [ (url, html, arg, xhr)=>{ return 'https://hei4.tv';
                                            },
-                    (url, html, arg, xhr)=>{ return /"number-din" href="(.+?)"/.exec(html)[1];
+                    (url, html, arg, xhr)=>{ g_web.hl.data.jmp = /https:\/\/(.+)/.exec(xhr.finalUrl)[1]; return xhr.finalUrl + /script src="(.+?)"/.exec(html)[1];
                                            },
-                    (url, html, arg, xhr)=>{ return /"number-din" href="(.+?)"/.exec(html)[1];
+                    (url, html, arg, xhr)=>{ g_web.hl.data.addr = /, "(.+?)",/.exec(html)[1]; return g_web.hl.data.addr + '/pages/nav/' + g_web.hl.data.jmp + 'result.json';
                                            },
-                    (url, html, arg, xhr)=>{ return xhr.finalUrl + /script src="(.+?)"/.exec(html)[1];
+                    (url, html, arg, xhr)=>{ html = aes(/"json_data":"(.+?)"/.exec(html)[1], 'zH3JDuCRXVGa3na7xbOqpx1bw6DAkbTP');
+                                             return /"jumpDomain":"(.+?)"/.exec(html)[1];
                                            },
-                    (url, html, arg, xhr)=>{ return /jumpUrl: '(.+?)'/.exec(html)[1];
+                    (url, html, arg, xhr)=>{ return /crossorigin href="(.+?)"/.exec(html)[1];
                                            },
-                    (url, html, arg, xhr)=>{ g_web.hl.data.vod = /2",2,"(.+?)"/.exec(html)[1];
-                                             let a = /href="https:\/\/\w+\.(.+?)\//.exec(html)[1];
-                                             g_web.hl.data.addr = 'https://jsonxz.' + a;
-                                             return /crossorigin href="(.+?)"/.exec(html)[1];
+                    (url, html, arg, xhr)=>{ g_web.hl.data.key = /defaultSecretKey:"(.+?)"/.exec(html)[1];
+                                             return url.replace(/\/[^\/]+$/, /path:"\/search",meta:p_\|\|\{\},component:\(\)=>de\(\(\)=>import\("\.(.+?)"\)/.exec(html)[1]);
                                            },
-                    (url, html, arg, xhr)=>{ let k = /defaultSecretKey:"(.+?)"/.exec(html)[1];
-                                             g_web.hl.data.key = CryptoJS.enc.Utf8.parse(k);
-                                             let s = /path:"\/search",meta:p_\|\|\{\},component:\(\)=>de\(\(\)=>import\("\.(.+?)"\)/.exec(html)[1];
-                                             return url.replace(/\/[^\/]+$/, s);
-                                           },
-                    (url, html, arg, xhr)=>{ let s = /k="(.+?)";\(window.location.hostname==="localhost"/.exec(html)[1];
-                                             g_web.hl.data.search = s;
-                                             return g_web.hl.data.addr
+                    (url, html, arg, xhr)=>{ g_web.hl.data.search = /k="(.+?)";\(window.location.hostname==="localhost"/.exec(html)[1];
+                                             return g_web.hl.data.addr;
                                            }
                   ]
         },
@@ -335,13 +329,13 @@ var g_web = {
             cnt : (html, arg)=>{ return arg.page_cnt;
                                },
             reg : /"id":"(\d+)","mainImgUrl":"(.+?)".+?"title":"(.+?)"/g,
-            fun : (ret)=>{ return [ret[3], g_web.hl.data.vod + '/' + ret[2], ret[1] ];
+            fun : (ret)=>{ return [ret[3], g_web.hl.data.addr + '/' + ret[2], ret[1] ];
                          },
             lzd : [ (e)=>{ get(g_web.hl.data.addr + '/pages/detail/' + e.id + '.json', g_web.hl.page.lzd[1], e);
                          },
                     (url, html, arg, xhr)=>{ let j = JSON.parse(html);
                                              j = JSON.parse(aes(j.json_data, g_web.hl.data.key));
-                                             arg.id = g_web.hl.data.vod + '/' + j.videoUrlList[0].videoUrl;
+                                             arg.id = g_web.hl.data.addr + '/' + j.videoUrlList[0].videoUrl.replace('700kb', '1200kb');
                                            }
                    ]
       }
@@ -502,7 +496,8 @@ function main() {
 }
 
 function aes(e, k) {
-    let d = CryptoJS.AES.decrypt(e, k, { iv : k, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+    let i = CryptoJS.enc.Utf8.parse(k);
+    let d = CryptoJS.AES.decrypt(e, i, { iv : i, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
     return CryptoJS.enc.Utf8.stringify(d);
 }
 
@@ -839,7 +834,7 @@ function on_change(keydown) {
     if (g_id == 'm3') {
         g_page_id = 0;
         g_page_cnt = 0;
-        video([input.value, '', input.value], '');
+        video(g_id, [input.value, '', input.value], '');
         input.value = '';
         return;
     }
