@@ -14,72 +14,91 @@
 // @require      https://cdn.jsdelivr.net/npm/crypto-js/crypto-js.min.js
 // @connect      --av--
 // @connect      88av88av4187.xyz
-// @connect      88av88av4550.cc
-// @connect      88av4555.cc
+// @connect      88av4689.cc
 // @connect      --bb--
-// @connect      bbox7k.live
-// @connect      bebox001.life
-// @connect      penjwt.shop
-// @connect      cloudfront.net
+// @connect      1jubt.vip
+// @connect      jubt5.one
+// @connect      wu5mz.com
+// @connect      jghpiz2ux8.shop
+// @connect      bhd5z7.com
+// @connect      gafrikdu.wiki
+// @connect      c24192b5.top
+// @connect      05hao.top
+// @connect      gayzyhh.com
+// @connect      vv.xunboe.cn
 // @connect      --dd--
 // @connect      trafficmanager.net
-// @connect      419436.com
+// @connect      413640.xyz
 // @connect      xuezhumall.com
 // @connect      --hl--
 // @connect      300507.com
 // @connect      jslswlkj.com
 // @connect      6hei.tv
-// @connect      739908.com
-// @connect      2gx1sd.com
+// @connect      340286.lol
+// @connect      bysshxd.com
+// @connect      xaycanu.com
 // @connect      860189.com
-// @connect      nbqygl.com
-// @connect      738816.com
+// @connect      bzbyzk.com
+// @connect      483898.lol
+// @connect      --hs--
+// @connect      xhsdc70.vip
 // @connect      --ht--
 // @connect      github.com
 // @connect      kht81.vip
-// @connect      htsyzz12.vip
-// @connect      htkt50.vip
-// @connect      htkt56.vip
+// @connect      htsyzz14.vip
+// @connect      htkt82.vip
+// @connect      htkt78.vip
 // @connect      cvcwj.cn
 // @connect      --jj--
 // @connect      jtv8868.pro
 // @connect      js020sp.pro
-// @connect      js02dn0.pro
+// @connect      js02dp4.pro
 // @connect      xiaohongshu.com
+// @connect      --jk--
+// @connect      jksp543.top
+// @connect      ggghou9.top
 // @connect      --os--
 // @connect      aosikazy.com
+// @connect      --th--
+// @connect      avtaohua-0122.com
+// @connect      avtaohua-f0154.cc
+// @connect      avtaohua-l1002.vip
+// @connect      sinw.net
 // @connect      --xj--
 // @connect      xj999.tv
 // @connect      sm83ed.com
 // @connect      dxj5577.com
 // @connect      7wzx9.com
 // @connect      --xx--
-// @connect      31xx4587a.cc
-// @connect      31xx9751s.cc
+// @connect      31xx11347s.cc
+// @connect      31xx11633s.cc
 // @connect      --yk--
 // @connect      yyk88.com
-// @connect      joskivduyu6.com
+// @connect      qajcqkhwsj7.xyz
 // @connect      bcebos.com
 // @connect      --zd--
 // @connect      ip.sb
 // @connect      in101.org
-// @connect      qa101.art
-// @connect      azurefd.net
+// @connect      cw101.app
 // @connect      --zp--
 // @connect      tk029.click
 // @connect      a163.app
-// @connect      heraaf.com
+// @connect      heraax.com
 // @connect      hexingtapes.cn
 // @connect      --zq--
 // @connect      94itv.app
 // @connect      iqqtv.tv
 // @connect      --zx--
 // @connect      aplhz.com
-// @connect      iigo3.com
-// @connect      zunu3.com
-// @connect      hanbige.com
-
+// @connect      xuxe3.com
+// @connect      fi11dd5.com
+// @connect      hasls.com
+// @connect      deyigx.com
+// @connect      cfk1314.com
 // ==/UserScript==
+
+(function() {
+'use strict';
 
 var g_hls = null;
 var g_video = null;
@@ -94,10 +113,13 @@ var g_web = {
     av : {
         data : {},
         addr : {
-            beg : 'https://88av88av4187.xyz/', // dz.88av@mailauto.org
+            url : 'https://88av88av4187.xyz/', // dz.88av@mailauto.org
+            beg : (data)=>{
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
-                    g_web.av.data.addr = /1<\/h2>[\s\S]+?href="(.+?)"/.exec(html)[1];
+                    g_web.av.data.addr = /2<\/h2>[\s\S]+?href="(.+?)"/.exec(html)[1];
                     return g_web.av.data.addr;
                 },
                 (url, html, arg, xhr)=>{
@@ -163,8 +185,25 @@ var g_web = {
     bb : {
         data : {},
         addr : {
-            beg : 'https://bbox7k.live', // zhaohuiav@beabox.net
+            url : 'https://1jubt.vip',
+            beg : (data)=>{
+                return data;
+            },
             fun : [
+                (url, html, arg, xhr)=>{
+                    return 'https://' + />([^<]+)<\/a><\/td>/.exec(html)[1] + '/cn/index.html';
+                },
+                (url, html, arg, xhr)=>{
+                    return 'https://' + />555[^a-zA-Z]+(.+?)</.exec(html)[1];
+                },
+                (url, html, arg, xhr)=>{
+                    let data = atob(/data-info="(.+?)"/.exec(html)[1]);
+                    let addr = JSON.parse(data);
+                    return 'https://' + addr.site_1 + '/index/home.html';
+                },
+                (url, html, arg, xhr)=>{
+                    return /"(https:\/\/.+?\/\?utm_source=WZ-555.+?)"/.exec(html)[1];
+                },
                 (url, html, arg, xhr)=>{
                     let key = /const key = "(.+?)";/.exec(html)[1];
                     let encrypted = /encryptedContent =\s+"(.+?)"/.exec(html)[1];
@@ -182,6 +221,9 @@ var g_web = {
                 (url, html, arg, xhr)=>{
                     let code = atob(/\('(.+?)'\)/.exec(html)[1]);
                     g_web.bb.data.search = /Beabox\.Global\.api_base_url="(.+?)"/.exec(code)[1];
+                    return g_web.bb.data.search;
+                },
+                (url, html, arg, xhr)=>{
                     return g_web.bb.data.addr;
                 }
             ]
@@ -201,14 +243,14 @@ var g_web = {
                 (url, html, arg, xhr)=>{
                     g_web.bb.task = [];
                     g_web.bb.data.task = true;
-                    let page, cnt = { 40 : 16337, 70 : 119, 42 : 6152, 41 : 6580, 66 : 838, 71 : 0, 43 : 479, 44 : 159, 63 : 333, 68 :47 };
+                    let page, cnt = { 40 : 16542, 41 : 6673, 42 : 6262, 43 : 480, 44 : 159, 63 : 333, 66 : 838, 68 :47, 70 : 119, 71 : 0 };
                     let menu = [{ name : 'find', url : rep(g_web.bb.menu.url[1], g_web.bb.data) }];
                     for (let ret, reg = /text-xl">([^<]+)<\/h2><a href="\/vodtype\/(\d+).html"/g; ret = reg.exec(html);) {
                         url = rep(rep(g_web.bb.menu.url[2], g_web.bb.data), ret);
                         menu.push({ name : ret[1], url : url });
                         page = (g_web.bb.data[ret[1]]) ? g_web.bb.data[ret[1]] : cnt[ret[2]];
                         if (page == undefined) { console.log(ret[1]); continue; }
-                        arg = 'get("' + url.replace('{PAGE}', ++page) + '", g_web.bb.menu.fun[1], { name : "' + ret[1] + '", url : "' + url + '", page : ' + page + ' });';
+                        arg = 'get("' + url.replace('{PAGE}', ++page) + '", g_web.bb.menu.fun[1], { id:' + ret[2] + ',name:"' + ret[1] + '",url:"' + url + '",page:' + page + ' });';
                         g_task.push(arg);
                         g_web.bb.task.push(arg);
                     }
@@ -216,7 +258,7 @@ var g_web = {
                 },
                 (url, html, arg, xhr)=>{
                     if (html) {
-                        console.log('bb', arg.name, arg.page + 1, 'try');
+                        console.log('bb', arg.id, arg.name, arg.page + 1, 'try');
                         get(url.replace(/\d+$/, ++arg.page), g_web.bb.menu.fun[1], arg);
                     } else {
                         g_web.bb.data[arg.name] = --arg.page;
@@ -224,7 +266,7 @@ var g_web = {
                         value.data.task = false;
                         value.data[arg.name] = arg.page;
                         GM_setValue('bb', value);
-                        console.log('bb', arg.name, arg.page);
+                        console.log('bb', arg.id, arg.name, arg.page);
                         task();
                     }
                 }
@@ -294,7 +336,10 @@ var g_web = {
     dd : {
         data : {},
         addr : {
-            beg : 'https://zok01.trafficmanager.net:857/?nb=fb&bm=41&ml=kp', // 5151dh2020@gmail.com
+            url : 'https://zok01.trafficmanager.net:857/?nb=fb&bm=41&ml=kp', // 5151dh2020@gmail.com
+            beg : (data)=>{
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
                     let t = decodeURIComponent(escape(atob(/decode\("(.+?)"\)/.exec(html)[1]))).split("|");
@@ -316,7 +361,7 @@ var g_web = {
         },
         menu : {
             url : [
-                '{ADDR}/api/vod/tag_group?page=1&per_page=1000&site_id=6&channel_id=523',
+                '{ADDR}/api/vod/tag_group?page=1&per_page=1000&site_id=6',
                 '{ADDR}/search/vod/?page={PAGE}&per_page=30&search={INPUT}',
                 '{ADDR}/api/vod/video?page={PAGE}&per_page=30&tag={1}'
             ],
@@ -328,12 +373,12 @@ var g_web = {
             fun : [
                 (url, html, arg, xhr)=>{
                     html = g_web.dd.page.dec(html);
-                    let data = JSON.parse(html).data;
+                    html = JSON.parse(html).data.items;
                     let menu = [{ name : 'find', url : rep(g_web.dd.menu.url[1], g_web.dd.data) }];
                     for (let i of [16, 17, 24, 34]) {
-                        for (let tag of data.items[i].tag) {
-                            if (tag.target == '' && tag.id < 1000) {
-                                menu.push({ name : tag.name, url : g_web.dd.data.addr + '/api/vod/video?page={PAGE}&per_page=30&tag=' + tag.id});
+                        for (let j of html[i].tag) {
+                            if (j.target == '' && j.id < 1000) {
+                                menu.push({ name : html[i].name + '-' + j.name, url : g_web.dd.data.addr + '/api/vod/video?page={PAGE}&per_page=30&tag=' + j.id});
                             }
                         }
                     }
@@ -357,9 +402,10 @@ var g_web = {
                 return ret;
             },
             fun : (html, arg)=>{
-                let vod = [], j = JSON.parse(html).data.items;
-                for (let i of j) {
-                    vod.push({ name : i.name, img : g_web.dd.data.img + i.pic, src : g_web.dd.data.vod + i.play_url });
+                html = JSON.parse(html).data.items;
+                let vod = [];
+                for (let i of html) {
+                    vod.push({ name : i.name, img : g_web.dd.data.img + i.pic, src : g_web.dd.data.vod + i.preview_play_url.replace('preview', 'index') });
                 }
                 return vod;
             },
@@ -383,7 +429,10 @@ var g_web = {
     hl : {
         data : {},
         addr : {
-            beg : 'https://300507.com/config.js',
+            url : 'https://300507.com/config.js',
+            beg : (data)=>{
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
                     return /'(.+?)'/.exec(html)[1] + '/pages/go/300507.com/home.json';
@@ -405,7 +454,7 @@ var g_web = {
                     return /"jumpDomain":"(.+?)"/.exec(html)[1];
                 },
                 (url, html, arg, xhr)=>{
-                    g_web.hl.data.vod = /1839553616978821000,"(https:\/\/.+?)"/.exec(html)[1];
+                    g_web.hl.data.vod = /61},1838993989679550500,"(https:\/\/.+?)"/.exec(html)[1];
                     g_web.hl.data.addr = /"(https:\/\/[^"]+)",\[/.exec(html)[1];
                     return /crossorigin href="(.+?)"/.exec(html)[1];
                 },
@@ -440,24 +489,23 @@ var g_web = {
                     let d = JSON.parse(html);
                     let j = JSON.parse(g_web.hl.aes(d.json_data, g_web.hl.data.key));
                     let data = j.tabs[2].channelList;
-                    let tmp, page, cnt = {
+                    let page, cnt = {
                         '1836636258456862722' : 135,'1836638166510841858' : 57,'1836638321423286274' : 16,'1838893473370796033' : 28,
                         '1836636931053441026' : 126,'1836638635517935617' : 34,'1836639219297931266' : 20,'1838847758462455810' : 79,
                         '1836637230514163713' : 78, '1836638914518831106' : 22,'1836639025110056962' : 54,'1838892794984185858' : 91,
                         '1836637472047345665' : 76, '1836638717539549185' : 17,'1836638524979052546' : 17,'1838844081720967170' : 33,
-                        '1838057717840576513' : 10, '1836637878462820353' : 28,'1838837573832511489' : 79,'1838847148595933186' : 36,
-                        '1836637986105458690' : 69, '1836638857375633410' : 7, '1838893403489615874' : 32,'1838844944606740482' : 48,
+                        '1838057717840576513' : 10, '1836637878462820353' : 28,'1838837573832511489' : 81,'1838847148595933186' : 36,
+                        '1836637986105458690' : 69, '1836638857375633410' : 8, '1838893403489615874' : 32,'1838844944606740482' : 48,
                         '1838881547295191042' : 57,
                         '1838837712016031746' : 26
                     };
                     let menu = [ { name : 'find', url : rep(g_web.hl.menu.url[1], g_web.hl.data) } ];
-                    for (let item of j.tabs[2].channelList) {
-                        tmp = rep(g_web.hl.menu.url[2], g_web.hl.data);
-                        url = tmp.replace('{1}', item.id);
-                        menu.push({ name : item.name, url : url });
-                        page = (g_web.hl.data[item.name]) ? g_web.hl.data[item.name] : cnt[item.id];
-                        if (page == undefined) { console.log(item.id, item.name); continue; }
-                        arg = 'get("' + url.replace('{PAGE}', ++page) + '", g_web.hl.menu.fun[1], { name : "' + item.name + '", url : "' + tmp + '", page : ' + page + '})';
+                    for (let i of j.tabs[2].channelList) {
+                        url = rep(g_web.hl.menu.url[2], g_web.hl.data).replace('{1}', i.id);
+                        menu.push({ name : i.name, url : url });
+                        page = (g_web.hl.data[i.name]) ? g_web.hl.data[i.name] : cnt[i.id];
+                        if (page == undefined) { console.log(arg.id, i.id, i.name, 'no data'); continue; }
+                        arg = 'get("' + url.replace('{PAGE}', ++page) + '", g_web.hl.menu.fun[1], { id:"'+i.id +'",name:"'+i.name+'",url:"'+url+'",page:'+page+'}, g_web.hl.menu.fun[2])';
                         g_task.push(arg);
                         g_web.hl.task.push(arg);
                     }
@@ -465,7 +513,7 @@ var g_web = {
                 },
                 (url, html, arg, xhr)=>{
                     if (xhr.status == 200) {
-                        console.log('hl', arg.name, arg.page + 1, 'try');
+                        console.log('hl', arg.id, arg.name, arg.page + 1, 'try');
                         get(arg.url.replace('{PAGE}', ++arg.page), g_web.hl.menu.fun[1], arg);
                     } else {
                         g_web.hl.data[arg.name] = --arg.page;
@@ -473,9 +521,12 @@ var g_web = {
                         value.data.task = false;
                         value.data[arg.name] = arg.page;
                         GM_setValue('hl', value);
-                        console.log('hl', arg.name, arg.page);
+                        console.log('hl', arg.id, arg.name, arg.page);
                         task();
                     }
+                },
+                (url, arg, xhr)=>{
+                    task();
                 }
             ],
         },
@@ -497,6 +548,7 @@ var g_web = {
                 return JSON.parse(html);
             },
             cnt : (html, arg)=>{
+                console.log(arg)
                 if (arg.title == 'find') {
                     let ret = html.length > 0 ? 1 : 0;
                     if (ret == 0) arg.page_id = 0;
@@ -520,10 +572,85 @@ var g_web = {
             return CryptoJS.enc.Utf8.stringify(d);
         }
     },
+    hs : {
+        data : {},
+        addr : {
+            url : 'https://www.xhsdc70.vip:2024', // kxiaohuangshu@gmail.com
+            beg : (data)=>{
+                return data;
+            },
+            fun : [
+                (url, html, arg, xhr)=>{
+                    return url;
+                }
+            ]
+        },
+        menu : {
+            url : [
+                '{ADDR}',
+                '{ADDR}/so/video/{INPUT}/{PAGE}',
+                '{ADDR}{JUMPURL}---{PAGE}'
+            ],
+            beg : (data)=>{
+                data.url = g_web.hs.menu.url[0];
+                data.menu = true;
+                return data;
+            },
+            fun : [
+                (url, html, arg, xhr)=>{
+                    html = g_web.hs.dec(/APP.data = '(.+?)'/.exec(html)[1])
+                    g_web.hs.data.img = html.site.img_domain;
+                    g_web.hs.data.vod = html.site.img_domain.replace('tu', 'ts1');
+                    let menu = [{ name : 'find', url : rep(g_web.hs.menu.url[1], g_web.hs.data) }];
+                    for (let i of html.type) {
+                        menu.push({ name : i.name, url : rep(rep(g_web.hs.menu.url[2],g_web.hs.data), i) });
+                    }
+                    return menu;
+                }
+            ]
+        },
+        page : {
+            beg : (data)=>{
+                g_web.hs.data.page = data.page_id;
+                g_web.hs.data.input = data.input;
+                return data;
+            },
+            dec : (html, arg)=>{
+                return g_web.hs.dec(/APP.data = '(.+?)'/.exec(html)[1])
+            },
+            cnt : (html, arg)=>{
+                return Math.ceil(html.total / 9);
+            },
+            fun : (html, arg)=>{
+                let vod = [];
+                for (let i of html.list) {
+                    vod.push({ name : i.vod_name, img : g_web.hs.data.img + i.vod_pic, src : g_web.hs.data.vod + /(video\/m3u8\/\d+\/\d+\/\w+)/.exec(i.vod_thumbnails)[1] + '/index.m3u8' });
+                }
+                if (vod.length == 0) console.log(html);
+                return vod;
+            },
+            lzd : []
+        },
+        dec : (d)=>{
+            let t1 = CryptoJS.enc.Base64.parse(d);
+            let aa = t1.words.slice(0, 8);
+            let bb = t1.words.slice(8, 12);
+            let cc = t1.words.slice(12);
+            let dd = aa.concat(cc);
+            let ee = CryptoJS.lib.WordArray.create(dd, dd.length * 4);
+            let iv = CryptoJS.lib.WordArray.create(bb, 16);
+            let key = CryptoJS.enc.Utf8.parse('WB0nMZHXlxNndORe');
+            let dat = CryptoJS.AES.decrypt({ ciphertext : ee }, key, {iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7}).toString(CryptoJS.enc.Utf8);
+            return JSON.parse(dat);
+        }
+    },
     ht : {
         data : {},
         addr : {
-            beg : 'https://github.com/htapp/htapp', // hongtaoav2@gmail.com
+            url : 'https://github.com/htapp/htapp', // hongtaoav2@gmail.com
+            beg : (data)=>{
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
                     return 'https://' + /https:\/\/<\/p>\s+<p dir="auto">([^<]+)/.exec(html)[1];
@@ -630,14 +757,92 @@ var g_web = {
             return CryptoJS.AES.decrypt(dat, key, {iv: ivv, mode: CryptoJS.mode.CFB, padding: CryptoJS.pad.NoPadding}).toString(CryptoJS.enc.Utf8);
         }
     },
+    jk : {
+        data : {},
+        addr : {
+            url : 'https://j7.jksp543.top/js/base.js', // ggtv12789@gmail.com
+            beg : (data)=>{
+                return data;
+            },
+            fun : [
+                (url, html, arg, xhr)=>{
+                    g_web.jk.data.key = CryptoJS.enc.Utf8.parse(/my = "(.+?)"/.exec(html)[1]);
+                    g_web.jk.data.domain = /domain = "(.+?)"/.exec(html)[1];
+                    return 'https://j7.jksp543.top';
+                }
+            ]
+        },
+        menu : {
+            url : [
+                '{ADDR}/js/api.js',
+                '{DOMAIN}/api.php/api/getShiPinList?currentPage={PAGE}&wd={INPUT}',
+                '{DOMAIN}/api.php/api/getShiPinList?currentPage={PAGE}&id={ID}'
+            ],
+            beg : (data)=>{
+                data.url = g_web.jk.menu.url[0];
+                data.menu = true;
+                return data;
+            },
+            fun : [
+                (url, html, arg, xhr)=>{
+                    html = /(\[[^;]+)/.exec(html)[1].replace(/(maiyao)|(wenzi1url)|(wenziurl)/g, '""');
+                    html = JSON.parse(html);
+                    let menu = [{ name : 'find', url : rep(g_web.jk.menu.url[1], g_web.jk.data) }];
+                    for (let item of html) {
+                        for (let i of item.subclass) {
+                            if (i.id != 1) {
+                                menu.push({ name : item.name + '-' + i.name, url : rep(rep(g_web.jk.menu.url[2],g_web.jk.data), i) });
+                            }
+                        }
+                    }
+                    return menu;
+                }
+            ]
+        },
+        page : {
+            beg : (data)=>{
+                data.host = true;
+                data.mobile = true;
+                g_web.jk.data.page = data.page_id;
+                g_web.jk.data.input = data.input;
+                return data;
+            },
+            dec : (html, arg)=>{
+                html = html.replace(/"|\\/g, '');
+                html = CryptoJS.AES.decrypt(html, g_web.jk.data.key, { iv: g_web.jk.data.key, padding: CryptoJS.pad.Pkcs7 }).toString(CryptoJS.enc.Utf8);
+	            html = JSON.parse(html);
+                return html
+            },
+            cnt : (html, arg)=>{
+                return Math.ceil(html.count / 30);
+            },
+            fun : (html, arg)=>{
+                let vod = [];
+                for (let i of html.list) {
+                    vod.push({ name : i.vod_blurb, img : i.vod_pic, src : g_web.jk.data.domain + '/api.php/api/getDetail?id=' + i.vod_id });
+                }
+                return vod;
+            },
+            lzd : [
+                (dom)=>{
+                    get(dom.id, g_web.jk.page.lzd[1], dom);
+                },
+                (url, html, arg, xhr)=>{
+                    html = g_web.jk.page.dec(html);
+                    arg.id = html.detail.vod_play_url;
+                }
+            ]
+        }
+    },
     jj : {
         data : {},
         addr : {
-            beg : 'https://6eaf.js020sp.pro:5268',//https://jtv8868.pro/jm/index.html', // niubiav@gmail.com
-            fun : [/*
-                (url, html, arg, xhr)=>{
-                    return /window.location.href = "(.+?)"/.exec(html)[1];
-                },*/
+            url : 'https://6eaf.js020sp.pro:5268',//https://jtv8868.pro/jm/index.html', // niubiav@gmail.com
+            beg : (data)=>{
+                data.mobile = true;
+                return data;
+            },
+            fun : [
                 (url, html, arg, xhr)=>{
                     return /(https:\/\/.+?)\//.exec(xhr.finalUrl)[1];
                 }
@@ -706,7 +911,10 @@ var g_web = {
     os : {
         data : {},
         addr : {
-            beg : 'https://aosikazy.com',
+            url : 'https://aosikazy.com',
+            beg : (data)=>{
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
                     return url;
@@ -767,10 +975,179 @@ var g_web = {
             ]
         }
     },
+    qq : {
+        data : {},
+        addr : {
+            url : 'https://94itv.app/',
+            beg : (data)=>{
+                return data;
+            },
+            fun : [
+                (url, html, arg, xhr)=>{
+                    return /<a href="(https:.+?)" title=/.exec(html)[1];
+                }
+            ]
+        },
+        menu : {
+            url : [
+                '{ADDR}',
+                '{ADDR}/search.php?kw_type=key&kw={INPUT}&num={PAGE}',
+                '{ADDR}/{1}&num={PAGE}'
+            ],
+            beg : (data)=>{
+                data.url = g_web.qq.menu.url[0];
+                data.menu = true;
+                return data;
+            },
+            fun :  [
+                (url, html, arg, xhr)=>{
+                    let menu = [{ name : 'find', url : rep(g_web.qq.menu.url[1], g_web.qq.data) }];
+                    for (let ret, reg = /"btn  item">\s+<a href="\/(\??cat.+?)" title="(.+?)"/g; ret = reg.exec(html);) {
+                        menu.push({ name : ret[2], url : rep(rep(g_web.qq.menu.url[2], g_web.qq.data), ret) });
+                    }
+                    return menu;
+                }
+            ]
+        },
+        page : {
+            beg : (data)=>{
+                g_web.qq.data.page = data.page_id;
+                g_web.qq.data.input = data.input;
+                return data;
+            },
+            dec : (html, arg)=>{
+                return html;
+            },
+            cnt : (html, arg)=>{
+                return Math.ceil(/<li class="ml-2">.+?(\d+).+?</.exec(html)[1] / 48);
+            },
+            fun : (html, arg)=>{
+                let vod = [];
+                for (let ret, reg = /data-videourl="(.+?)"\s*>\s*<img alt='(.+?)'[\s\S]+?src="(.+?)"/g; ret = reg.exec(html);) {
+                    vod.push({ name : ret[2] + '\n' + ret[1], img : ret[3], src : '' });
+                }
+                return vod;
+            },
+            lzd : []
+        }
+    },
+    th : {
+        data : {},
+        addr : {
+            url : 'https://www.avtaohua-0122.com', // shipinyingtao@gmail.com
+            beg : (data)=>{
+                return data;
+            },
+            fun : [
+                (url, html, arg, xhr)=>{
+                    html = decodeURIComponent(/"(.+?)"/.exec(html)[1]);
+                    return /href="(.+?)" class="weui-btn/.exec(html)[1];
+                },
+                (url, html, arg, xhr)=>{
+                    html = decodeURIComponent(/"(.+?)"/.exec(html)[1]);
+                    console.log('th', /active" href="(.+?)"/.exec(html)[1]);
+                    g_web.th.data.addr = 'https://hrtgf.avtaohua-l1002.vip';
+                    return g_web.th.data.addr;
+                },
+                (url, html, arg, xhr)=>{
+                    html = decodeURIComponent(/\("(.+?)"\)/.exec(html)[1]);
+                    return /"(https:\/\/[^/]+\/avtaohua\/static\/app.js\?v=\d+)"/.exec(html)[1];
+                },
+                (url, html, arg, xhr)=>{
+                    let ret = /l="(\w+)",c="(\w+)"/.exec(html);
+                    g_web.th.data.iv = CryptoJS.enc.Utf8.parse(ret[2]);
+                    g_web.th.data.key = CryptoJS.enc.Utf8.parse(ret[1]);
+                    return g_web.th.data.addr;
+                }
+            ]
+        },
+        menu : {
+            url : [
+                '{ADDR}/app/common/getCategoryTree',
+                '{ADDR}/app/movie/getListV2',
+                '{ADDR}/app/movie/getListV2',
+            ],
+            beg : (data)=>{
+                data.url = g_web.th.menu.url[0];
+                data.menu = true;
+                return data;
+            },
+            fun : [
+                (url, html, arg, xhr)=>{
+                    html = JSON.parse(g_web.th.dec(html));
+                    let data = '{"page":{PAGE},"pageSize":20,"sort":1,"cid":"{PID}","tag":"{NAME}"}';
+                    let menu = [{ name : 'find', url : rep(g_web.th.menu.url[1], g_web.th.data), data : '{"page":{PAGE},"pageSize":24,"keyword":"{INPUT}"}' }];
+                    for (let item of html.data) {
+                        if (item.children) {
+                            for (let i of item.children) {
+                                menu.push({ name : item.name + '-' + i.name, url : rep(g_web.th.menu.url[2], g_web.th.data), data : rep(data, i) });
+                            }
+                        }
+                    }
+                    return menu;
+                }
+            ]
+        },
+        page : {
+            beg : (data)=>{
+                g_web.th.data.page = data.page_id;
+                g_web.th.data.input = data.input;
+                data.type = 'application/json';
+                data.post = g_web.th.enc(rep(data.data, g_web.th.data));
+                return data;
+            },
+            dec : (html, arg)=>{
+                return JSON.parse(g_web.th.dec(html));
+            },
+            cnt : (html, arg)=>{
+                return html.pageCount;
+            },
+            fun : (html, arg)=>{
+                let vod = [];
+                for (let item of html.records) {
+                    vod.push({ name : item.title, img : 'https://' + item.imgDomain + '/' + item.poster, src : g_web.th.data.addr + '/app/movie/getDetail?viewKey=' + item.viewKey });
+                }
+                if (vod.length == 0) console.log(html);
+                return vod;
+            },
+            lzd : [
+                (dom)=>{
+                    get(dom.id, g_web.th.page.lzd[2], dom);
+                    if (dom.poster.indexOf('/upload/') > 0) {
+                        get(dom.poster, g_web.th.page.lzd[1], { 'xml' : true, bin : true, dom : dom });
+                    }
+                },
+                (url, html, arg, xhr)=>{
+                    let bin = [];
+                    let t1 = new Uint8Array(html, 3);
+                    let t2 = CryptoJS.lib.WordArray.create(t1).toString(CryptoJS.enc.Base64);
+                    let t3 = CryptoJS.AES.decrypt(t2, g_web.th.data.key, {iv: g_web.th.data.iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7});
+                    for (let t = t3.words, n = t3.sigBytes, r = new Uint8Array(n), i = 0; i < n; i++) {
+                        bin += String.fromCharCode(t[i >>> 2] >>> 24 - i % 4 * 8 & 255);
+                    }
+                    arg.dom.poster = 'data:image/webp;base64,' + btoa(bin);
+                },
+                (url, html, arg, xhr)=>{
+                    html = JSON.parse(g_web.th.dec(html));
+                    arg.id = 'https://' + html.data.sourceInfoVO.playDomain + '/' + html.data.playUrl;
+                }
+            ]
+        },
+        enc : (d)=>{
+            let dat = CryptoJS.enc.Utf8.parse(typeof(d) === 'string' ? d : JSON.stringify(d));
+            return CryptoJS.AES.encrypt(dat, g_web.th.data.key, {iv: g_web.th.data.iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7}).toString();
+        },
+        dec : (d)=>{
+            return CryptoJS.AES.decrypt(d, g_web.th.data.key, {iv: g_web.th.data.iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7}).toString(CryptoJS.enc.Utf8).toString();
+        }
+    },
     xj : {
         data : {},
         addr : {
-            beg : 'https://xj999.tv', // dxj999tv@gmail.com
+            url : 'https://xj999.tv', // dxj999tv@gmail.com
+            beg : (data)=>{
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
                     return atob(/'(.+?)'/.exec(html)[1]);
@@ -813,7 +1190,7 @@ var g_web = {
                     for (let i of data) {
                         for (let j of i.menu2List) {
                             menu.push({
-                                name : j.typeName2, url : rep(g_web.xj.menu.url[2], g_web.xj.data),
+                                name : i.typeName + '-' + j.typeName2, url : rep(g_web.xj.menu.url[2], g_web.xj.data),
                                 data : '{"command":"WEB_GET_INFO","pageNumber":{PAGE},"RecordsPage":20,"typeId":' + j.typeId2 + ',"typeMid":1,"languageType":"CN","content":""}'
                             });
                         }
@@ -854,7 +1231,10 @@ var g_web = {
     xx : {
         data : {},
         addr : {
-            beg : 'https://2.31xx4587a.cc', // 31xxcom@gmail.com
+            url : 'https://2.31xx11347s.cc', // 31xxcom@gmail.com
+            beg : (data)=>{
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
                     html = decodeURIComponent(/"(.+?)"/.exec(html)[1]);
@@ -920,7 +1300,10 @@ var g_web = {
     yk : {
         data : {},
         addr : {
-            beg : 'http://yyk88.com', // youyiku88@gmail.com
+            url : 'http://yyk88.com', // youyiku88@gmail.com
+            beg : (data)=>{
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
                     let a = decodeURIComponent(escape(atob(/data-caption=".{10}(.+?)"/.exec(html)[1]))).split(',');
@@ -973,27 +1356,27 @@ var g_web = {
                     g_web.yk.task = [];
                     g_web.yk.data.task = true;
                     let menu = [ { name : 'find', url : rep(g_web.yk.menu.url[1], g_web.yk.data) } ];
-                    let cnt = {//    15         26           37         47         56         67         78         88         101         119       132
-                        1006 : 1400, 2001 : 2,  10000 : 1,   7001 : 38, 3011 : 49, 6001 : 43, 4001 : 61, 5006 : 54, 11001 : 1, 8000 : 201, 9000 : 8, 13013 : 174,
-                        1000 : 85,   2010 : 3,  10001 : 202, 7012 : 35, 3001 : 49, 6002 : 2,  4002 : 7,  5012 : 1,  11002 : 2, 8001 : 3,   9001 : 1, 13001 : 174,
-                        1001 : 61,   2002 : 38, 10002 : 105, 7011 : 35, 3002 : 2,  6012 : 43, 4003 : 2,  5001 : 1,  36 : 180,  8002 : 6,   9002 : 1, 13002 : 39,
-                        1010 : 3,    2012 : 4,  10003 : 21,  7002 : 15, 3003 : 1,  6003 : 1,  4004 : 8,  5008 : 54, 33 : 192,  8003 : 2,   9003 : 5, 13003 : 71,
-                        1016 : 192,  2003 : 16, 10004 : 4,   7005 : 3,  3006 : 1,  6004 : 2,  4005 : 3,  5002 : 1,  32 : 1400, 8004 : 2,   9004 : 5, 13004 : 71,
-                        1012 : 26,   2007 : 49, 10005 : 2,   7006 : 1,  3004 : 5,  6005 : 2,  4006 : 17, 5009 : 11, 34 : 1400, 8018 : 7,   9005 : 2, 13012 : 5,
-                        1004 : 7,    2009 : 1,  10008 : 2,   7007 : 2,  3005 : 2,  6006 : 1,  4007 : 1,  5003 : 2,  22 : 1400, 8005 : 2,   9008 : 1, 13006 : 2,
-                        1014 : 19,   2014 : 2,  10009 : 2,   7008 : 1,  3007 : 1,  6007 : 1,  4008 : 1,  5010 : 4,  21 : 1400, 8008 : 4,   9009 : 1, 13004 : 3,
-                        1003 : 174,  2013 : 1,  10010 : 13,  7009 : 1,  3008 : 1,  6008 : 1,  4009 : 2,  5007 : 3,  20 : 1400, 8009 : 2,   9010 : 2, 13005 : 2,
-                        1013 : 42,   2004 : 7,  10011 : 2,   7010 : 2,             6009 : 43, 4010 : 1,  5005 : 1,  24 : 1400, 8010 : 2,   9011 : 2, 13011 : 1,
-                        1002 : 15,   2008 : 85, 10006 : 198,                       6010 : 1,  4011 : 61,            23 : 1400, 8011 : 2,   9013 : 2, 13007 : 1,
-                        1005 : 44,                                                 6011 : 1,                        37 : 42,   8006 : 5,   9006 : 1, 13008 : 2,
-                        1009 : 9,                                                                                   35 : 179,  8012 : 1,   9012 : 1,
-                        1008 : 1400,                                                                                           8013 : 1,
-                                                                                                                               8014 : 2,
-                                                                                                                               8015 : 1,
-                                                                                                                               8016 : 5,
-                                                                                                                               8017 : 205,
+                    let cnt = {//    15          26           37         47         56         67          78         88            101         119       132
+                        1006 : 1680, 2001 : 3,   10000 : 1,   7001 : 43, 3011 : 56, 6001 : 46, 4001 : 82,  5006 : 58, 11001 : 1,    8000 : 334, 9000 : 9, 13013 : 187,
+                        1000 : 100,  2010 : 3,   10001 : 212, 7012 : 38, 3001 : 56, 6002 : 2,  4002 : 7,   5012 : 1,  11002 : 2,    8001 : 6,   9001 : 2, 13001 : 187,
+                        1001 : 82,   2002 : 45,  10002 : 110, 7011 : 35, 3002 : 2,  6012 : 46, 4003 : 5,   5001 : 1,  36 :    187,  8002 : 10,  9002 : 1, 13002 : 41,
+                        1010 : 5,    2012 : 5,   10003 : 26,  7002 : 16, 3003 : 1,  6003 : 1,  4004 : 10,  5008 : 58, 33 :    200,  8003 : 2,   9003 : 5, 13003 : 74,
+                        1016 : 200,  2003 : 21,  10004 : 5,   7005 : 5,  3006 : 1,  6004 : 2,  4005 : 4,   5002 : 1,  32 :    1680, 8004 : 4,   9004 : 5, 13012 : 6,
+                        1012 : 30,   2007 : 56,  10005 : 4,   7006 : 1,  3004 : 6,  6005 : 2,  4006 : 26,  5009 : 11, 34 :    1680, 8018 : 13,  9005 : 2, 13006 : 2,
+                        1004 : 12,   2009 : 1,   10008 : 2,   7007 : 2,  3005 : 2,  6006 : 1,  4007 : 3,   5003 : 3,  22 :    1680, 8005 : 4,   9008 : 1, 13004 : 3,
+                        1014 : 26,   2014 : 2,   10009 : 2,   7008 : 2,  3007 : 2,  6007 : 1,  4008 : 2,   5010 : 5,  21 :    1680, 8008 : 5,   9009 : 1, 13005 : 3,
+                        1003 : 184,  2013 : 2,   10010 : 24,  7009 : 1,  3008 : 1,  6008 : 1,  4009 : 3,   5007 : 6,  20 :    1680, 8009 : 3,   9010 : 2, 13011 : 1,
+                        1013 : 43,   2004 : 9,   10011 : 2,   7010 : 2,             6009 : 46, 4010 : 3,   5005 : 1,  24 :    1680, 8010 : 2,   9011 : 2, 13007 : 1,
+                        1002 : 19,   2008 : 100, 10006 : 209,                       6010 : 1,  4011 : 82,             23 :    1680, 8011 : 2,   9013 : 3, 13008 : 2,
+                        1005 : 50,                                                  6011 : 1,                         37 :    43,   8006 : 5,   9006 : 1,
+                        1009 : 9,                                                                                     35 :    187,  8012 : 1,   9012 : 1,
+                        1008 : 1680,                                                                                                8013 : 1,
+                                                                                                                                    8014 : 3,
+                                                                                                                                    8015 : 3,
+                                                                                                                                    8016 : 6,
+                                                                                                                                    8017 : 334,
                     };
-                    for (let t, j, ret, reg = /"([^"]+)";sessionStorage.setItem\("dance_mh_resource_view_2_\d+_\d+"/g; ret = reg.exec(html);) {
+                    for (let t, j, ret, reg = /sessionStorage.setItem\("dance_mh_resource_view_2_\d+_\d+","(.+?)"/g; ret = reg.exec(html);) {
                         t = ret[1].split("").reverse().join("");
                         t = decodeURIComponent(atob(t));
                         j = JSON.parse(t);
@@ -1015,9 +1398,12 @@ var g_web = {
                 },
                 (url, html, arg, xhr)=>{
                     html = g_web.yk.page.dec(html);
-                    let j = JSON.parse(html);
-                    if (j.data == undefined) return;
-                    if (j.data.length != 0) {
+                    let j;
+                    try {
+                        j = JSON.parse(html);
+                    } catch (e) {
+                        console.log('===============catch erro==============');
+
                         let data = g_web.yk.getData(arg.id, arg.mode, ++arg.page);
                         let check = g_web.yk.getCheck(data);
                         url = g_web.yk.menu.url[2].replace('{ADDR}', g_web.yk.data.addr);
@@ -1025,13 +1411,23 @@ var g_web = {
                         url = url.replace('{CHECK}', check);
                         console.log('yk', arg.name, arg.page, 'try');
                         get(url, g_web.yk.menu.fun[1], arg);
+                    }
+                    if (j.data == undefined) return;
+                    if (j.data.length != 0) {
+                        let data = g_web.yk.getData(arg.id, arg.mode, ++arg.page);
+                        let check = g_web.yk.getCheck(data);
+                        url = g_web.yk.menu.url[2].replace('{ADDR}', g_web.yk.data.addr);
+                        url = url.replace('{DATA}', data);
+                        url = url.replace('{CHECK}', check);
+                        console.log('yk', arg.id, arg.name, arg.page, 'try');
+                        get(url, g_web.yk.menu.fun[1], arg);
                     } else {
                         g_web.yk.data[arg.name] = --arg.page;
                         let value = GM_getValue('yk');
                         value.data.task = false;
                         value.data[arg.name] = arg.page;
                         GM_setValue('yk', value);
-                        console.log('yk', arg.name, arg.page);
+                        console.log('yk', arg.id, arg.name, arg.page);
                         task();
                     }
                 }
@@ -1172,10 +1568,14 @@ var g_web = {
             return '' + y + m + d + h + "_" + f;
         }
     },
-/*    zd : {
+    zd : {
         data : {},
         addr : {
-            beg : 'https://api.ip.sb/geoip', // url@avhd101.email
+            url : 'https://api.ip.sb/geoip', // url@avhd101.email
+            beg : (data)=>{
+                data.host = true;
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
                     g_web.zd.data.ip = /"ip":"(.+?)"/.exec(html)[1];
@@ -1199,13 +1599,14 @@ var g_web = {
                         }
                         result += char;
                     }
-                    return result;
+                    console.log('zd addr  ', result);
+                    return 'https://cn920.cw101.app';
                 }
             ]
         },
         menu : {
             url : [
-                '{ADDR}/?&time=1',
+                '{ADDR}',
                 '{ADDR}/search?q={INPUT}&p={PAGE}',
                 '{ADDR}/{1}?page={PAGE}'
             ],
@@ -1220,14 +1621,14 @@ var g_web = {
                     html = g_web.zd.page.dec(html);
                     g_web.zd.task = [];
                     g_web.zd.data.task = true;
-                    let page, cnt = { 'hd' : 3207, 'chinese' : 1797, 'uncensored' : 214, 'rank/today' : 5 };
+                    let page, cnt = { 'hd' : 3346, 'chinese' : 1857, 'uncensored' : 216, 'rank/today' : 5 };
                     let menu = [ { name : 'find', url : rep(g_web.zd.menu.url[1], g_web.zd.data) } ];
-                    for (let ret, reg = /itemprop="url" href="\/(?!category)([^"]+)">([^<>]+)</g; ret = reg.exec(html);) {
+                    for (let ret, reg = /<a itemprop="url" href="\/(?!category)([^"]+)">([^<>]+)</g; ret = reg.exec(html);) {
                         url = rep(rep(g_web.zd.menu.url[2], g_web.zd.data), ret);
                         menu.push({ name : ret[2], url : url });
                         page = (g_web.zd.data[ret[2]]) ? g_web.zd.data[ret[2]] : cnt[ret[1]];
                         if (page == undefined) { console.log(ret[1]); continue; }
-                        arg = 'get("' + url.replace('{PAGE}', ++page) + '", g_web.zd.menu.fun[1], { name : "' + ret[2] + '", page : ' + page + '});';
+                        arg = 'get("' + url.replace('{PAGE}', ++page) + '", g_web.zd.menu.fun[1], { id : "' + ret[1] + '", name : "' + ret[2] + '", page : ' + page + '});';
                         g_task.push(arg);
                         g_web.zd.task.push(arg);
                     }
@@ -1236,7 +1637,7 @@ var g_web = {
                 (url, html, arg, xhr)=>{
                     html = g_web.zd.page.dec(html);
                     if (/R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==/.exec(html)) {
-                        console.log('zd', arg.name, arg.page + 1, 'try');
+                        console.log('zd', arg.id, arg.name, arg.page + 1, 'try');
                         get(url.replace(/\d+$/, ++arg.page), g_web.zd.menu.fun[1], arg);
                     } else {
                         g_web.zd.data[arg.name] = --arg.page;
@@ -1244,7 +1645,7 @@ var g_web = {
                         value.data.task = false;
                         value.data[arg.name] = arg.page;
                         GM_setValue('zd', value);
-                        console.log('zd', arg.name, arg.page);
+                        console.log('zd', arg.id, arg.name, arg.page);
                         task();
                     }
                 }
@@ -1257,7 +1658,11 @@ var g_web = {
                 return data;
             },
             dec : (html, arg)=>{
-                return utf(atob(/ec='(.+?)'/.exec(html)[1]));
+                let t = atob(/ec='(.+?)'/.exec(html)[1]);
+                let a = new Uint8Array(t.length);
+                for (let i = 0; i < t.length; i++) { a[i] = t.charCodeAt(i); }
+                let utf_dec = new TextDecoder('utf-8');
+                return utf_dec.decode(a);
             },
             cnt : (html, arg)=>{
                 if (arg.title == 'find') {
@@ -1287,19 +1692,25 @@ var g_web = {
                 }
             ]
         }
-    },*/
+    },
     zp : {
         data : {},
         addr : {
-            beg : 'http://1237.tk029.click:89/ads.html',
+            url : 'http://1237.tk029.click:89/ads.html',
+            beg : (data)=>{
+                return data;
+            },
             fun : [
                 (url, html, arg, xhr)=>{
                     return /'(.+?)'/.exec(html)[1];
                 },
                 (url, html, arg, xhr)=>{
                     let ret = /"(https:\/\/[^/]+)\/([^/]+)\/([^?]+)\?([^=]+)=(.+?)"/.exec(html);
-                    g_web.zp.data.cookie = '_' + ret[2] + '=' + ret[3] + '; ' + ret[4] + '=' + ret[5];
-                    return ret[1];
+                    if (ret) {
+                        g_web.zp.data.cookie = '_' + ret[2] + '=' + ret[3] + '; ' + ret[4] + '=' + ret[5];
+                        return ret[1];
+                    }
+                    throw new Error();
                 }
             ]
         },
@@ -1364,81 +1775,18 @@ var g_web = {
             return n
         }
     },
-/*    zq : {
+    zx : {
         data : {},
         addr : {
-            beg : 'https://94itv.app/',
-            fun : [
-                (url, html, arg, xhr)=>{
-                    return /<a href="(https:.+?)" title=/.exec(html)[1];
-                }
-            ]
-        },
-        menu : {
-            url : [
-                '{ADDR}',
-                '{ADDR}/search.php?kw_type=key&kw={INPUT}&num={PAGE}',
-                '{ADDR}/{1}&num={PAGE}'
-            ],
+            url : 'https://www.aplhz.com',
             beg : (data)=>{
-                data.url = g_web.zq.menu.url[0];
-                data.menu = true;
                 return data;
             },
-            fun :  [
-                (url, html, arg, xhr)=>{
-                    let menu = [{ name : 'find', url : rep(g_web.zq.menu.url[1], g_web.zq.data) }];
-                    for (let ret, reg = /"btn  item">\s+<a href="\/(\??cat.+?)" title="(.+?)"/g; ret = reg.exec(html);) {
-                        menu.push({ name : ret[2], url : rep(rep(g_web.zq.menu.url[2], g_web.zq.data), ret) });
-                    }
-                    return menu;
-                }
-            ]
-        },
-        page : {
-            beg : (data)=>{
-                g_web.zq.data.page = data.page_id;
-                g_web.zq.data.input = data.input;
-                return data;
-            },
-            dec : (html, arg)=>{
-                return html;
-            },
-            cnt : (html, arg)=>{
-                return Math.ceil(/<li class="ml-2">.+?(\d+).+?</.exec(html)[1] / 48);
-            },
-            fun : (html, arg)=>{
-                let vod = [];
-                for (let ret, reg = /data-videourl="(.+?)"[\s\S]+?src="(.+?)"\s*alt='(.+?)'/g; ret = reg.exec(html);) {
-                    vod.push({ name : ret[3], img : ret[2], src : g_web.zq.data.addr + ret[1] });
-                }
-                return vod;
-            },
-            lzd : [
-                //(dom)=>{
-                //    get(dom.id, g_web.zq.page.lzd[1], { host : true, dom : dom }, g_web.zq.page.lzd[2]);
-                //},
-                //(url, html, arg, xhr)=>{
-                //    console.log(url, 'html');
-                //},
-                //(url, arg, xhr)=>{
-                //    if (xhr.error) {
-                //        arg.dom.id = /"(.+?)"/.exec(xhr.error)[1];
-                //    }
-                //}
-            ]
-        }
-    },*/
-/*    zx : {
-        data : {},
-        addr : {
-            beg : 'https://www.aplhz.com',
             fun : [
                 (url, html, arg, xhr)=>{
                     return /data-clipboard-text="(.+?)"/.exec(html)[1];
                 },
                 (url, html, arg, xhr)=>{
-                    console.log(html);
                     return /src="(https:\/\/[^/]+\/pc\/assets\/index.\w+.js)"/.exec(html)[1];
                 },
                 (url, html, arg, xhr)=>{
@@ -1460,7 +1808,8 @@ var g_web = {
             url : [
                 '{ADDR}/panel/list',
                 '{ADDR}/base/globalSearch',
-                '{ADDR}/videos/getList'
+                '{ADDR}/videos/getList',
+                '{ADDR}/panel/get',
             ],
             beg : (data)=>{
                 data.type = 'application/json';
@@ -1476,14 +1825,20 @@ var g_web = {
                     arg = '{"page":{PAGE},"length":12,"type":1,"key":"{INPUT}","orderType":1,"orderMode":null}';
                     let menu = [{ name : 'find', url : rep(g_web.zx.menu.url[1], g_web.zx.data), data : arg }];
                     for (let item of JSON.parse(html).data.list) {
-                        if (item.panelId < 175 || item.panelId > 179) continue;
-                        arg = '{"orderType":7,"tags":[],"length":11,"page":{PAGE},"offset":{OFFSET},"typeIds":[{' + item.panelName + '}],"payType":[3,4]}';
-                        menu.push({ name : item.panelName, url : rep(g_web.zx.menu.url[2], g_web.zx.data), data : arg });
-                        arg = '{"endata":"' + g_web.zx.endata(JSON.stringify({ panelId : item.panelId })) + '","ents":"' + g_web.zx.ents() + '"}';
-                        arg = '{ type : "application/json", post : \'' + arg + '\', name : "' + item.panelName + '" }';
-                        arg = 'get("' + g_web.zx.data.addr + '/panel/get", g_web.zx.menu.fun[1], ' + arg + ');';
-                        g_task.push(arg);
-                        g_web.zx.task.push(arg);
+                        if (item.panelId == 209 || item.panelId == 173 || item.panelId == 182 || item.panelId == 172 || item.panelId == 180) continue;
+                        if (item.panelId == 171) {
+                            arg = '{"panelId":' + item.panelId + '}';
+                            menu.push({ name : item.panelName, url : rep(g_web.zx.menu.url[3], g_web.zx.data), data : arg });
+                        } else {
+                            arg = '{"orderType":7,"tags":[],"length":11,"page":{PAGE},"offset":{OFFSET},"typeIds":[{' + item.panelName + '}],"payType":[3,4]}';
+                            menu.push({ name : item.panelName, url : rep(g_web.zx.menu.url[2], g_web.zx.data), data : arg });
+
+                            arg = '{"endata":"' + g_web.zx.endata(JSON.stringify({ panelId : item.panelId })) + '","ents":"' + g_web.zx.ents() + '"}';
+                            arg = '{ type : "application/json", post : \'' + arg + '\', name : "' + item.panelName + '" }';
+                            arg = 'get("' + g_web.zx.data.addr + '/panel/get", g_web.zx.menu.fun[1], ' + arg + ');';
+                            g_task.push(arg);
+                            g_web.zx.task.push(arg);
+                        }
                     }
                     return menu;
                 },
@@ -1514,33 +1869,48 @@ var g_web = {
                 return JSON.parse(html);
             },
             cnt : (html, arg)=>{
-                return Math.ceil(html.data.count / 12);
+                return html.data.info ? 1 : Math.ceil(html.data.count / 12);
             },
             fun : (html, arg)=>{
                 let vod = [];
-                let dat = arg.title == 'find' ? html.data.infos : html.data.list;
-                for (let item of dat) {
-                    vod.push({ name : item.name, img : item.coverImgUrl, src : item.id });
+                if (html.data.info) {
+                    for (let i of html.data.info.Layouts) {
+                        if (i.layoutId == 361) {
+                            let layout = JSON.parse(i.layoutContent);
+                            for (let j of layout.right.list) {
+                                vod.push({ name : '', img : '', src : j });
+                            }
+                        }
+                    }
+                } else {
+                    let dat = arg.title == 'find' ? html.data.infos : html.data.list;
+                    for (let item of dat) {
+                        vod.push({ name : item.name, img : item.coverImgUrl, src : item.id });
+                    }
                 }
                 return vod;
             },
             lzd : [
                 (dom)=>{
-                    //let post = '{"endata":"' + g_web.zx.endata('{"videoId":' + dom.id + '}') + '","ents":"' + g_web.zx.ents() + '"}';
-                    //get(g_web.zx.data.addr + '/videos/v2/getUrl', g_web.zx.page.lzd[1], { type : 'application/json', post : post, dom : dom });
-                    get(dom.poster, g_web.zx.page.lzd[2], dom);
+                    if (dom.poster == 'https://hm.baidu.com/hm.js?m3') {
+                        let post = '{"endata":"' + g_web.zx.endata('{"videoId":' + dom.id + '}') + '","ents":"' + g_web.zx.ents() + '"}';
+                        get(g_web.zx.data.addr + '/videos/getInfo', g_web.zx.page.lzd[1], { type : 'application/json', post : post, dom : dom });
+                        get(g_web.zx.data.addr + '/videos/v2/getUrl', g_web.zx.page.lzd[3], { type : 'application/json', post : post, dom : dom });
+                    } else {
+                        get(dom.poster, g_web.zx.page.lzd[2], dom);
+                    }
                 },
                 (url, html, arg, xhr)=>{
                     html = JSON.parse(html);
-                    if (html.data.url) {
-                        arg.dom.id = html.data.url;
-                    } else {
-                        console.log(arg.dom.id, html.msg);
-                    }
+                    arg.dom.previousElementSibling.innerText = html.data.info.name;
+                    get(html.data.info.coverImgUrl, g_web.zx.page.lzd[2], arg.dom);
                 },
                 (url, html, arg, xhr)=>{
                     let d = CryptoJS.AES.decrypt(html, CryptoJS.enc.Utf8.parse(g_web.zx.data.img), { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7});
                     arg.poster = CryptoJS.enc.Utf8.stringify(d).toString();
+                },
+                (url, html, arg, xhr)=>{
+                    arg.dom.id = JSON.parse(html).data.url;
                 }
             ]
         },
@@ -1554,11 +1924,11 @@ var g_web = {
             const e = new Date;
             return g_web.zx.endata(parseInt(e.getTime() / 1e3) + e.getTimezoneOffset() * 60 + g_web.zx.data.timeStamp)
         }
-    }*/
+    }
 };
 
 function main() {
-    //GM_deleteValue('dd');
+    //GM_deleteValue('zd');
 
     let p = GM_getValue('aa');
     let x = p ? p.x : 100;
@@ -1570,14 +1940,12 @@ function main() {
     div.draggable = true;
     div.style = 'z-index:999;display:flex;position:fixed;left:' + x + 'px;top:' + y + 'px;background-color:#777;border:1px solid black;border-radius:6px;padding:5px;cursor:move;';
     div.ondragstart = (e)=>{
-        console.log(e);
         g_data.mx = window.innerWidth;
         g_data.my = window.innerHeight;
         g_data.cx = e.target.offsetWidth;
         g_data.cy = e.target.offsetHeight;
         g_data.ox = e.clientX - e.target.offsetLeft;
         g_data.oy = e.clientY - e.target.offsetTop;
-        console.log(g_data);
     };
     div.ondragend = (e)=>{
         x = e.x - g_data.ox;
@@ -1586,8 +1954,8 @@ function main() {
         y < 0 ? y = 0 : (y + g_data.cy) > g_data.my ? y = g_data.my - g_data.cy : y;
         div.style.left = x + 'px';
         div.style.top = y + 'px';
-        console.log(x, y);
         GM_setValue('aa', { x : x, y : y });
+        console.log('aa', GM_getValue('aa'));
     };
     document.body.appendChild(div);
 
@@ -1633,7 +2001,8 @@ function main() {
 
 function task() {
     let code = g_task.splice(0, 1)[0];
-    eval('setTimeout(()=>{' + code + '}, 10);');
+    //console.log(code);
+    eval('setTimeout(()=>{' + code + '}, 0);');
 }
 
 function lzd() {
@@ -1644,13 +2013,6 @@ function lzd() {
      }});
 
     observer.observe();
-}
-
-function utf(t) {
-    let a = new Uint8Array(t.length);
-    for (let i = 0; i < t.length; i++) { a[i] = t.charCodeAt(i); }
-    let utf_dec = new TextDecoder('utf-8');
-    return utf_dec.decode(a);
 }
 
 function str(t, u) {
@@ -1676,10 +2038,9 @@ function str(t, u) {
 }
 
 function rep(t, map) {
-    if (t) {
-        for (let key in map) {
-            t = t.replace('{' + key.toUpperCase() + '}', map[key]);
-        }
+    if (!t) return t;
+    for (let key in map) {
+        t = t.replace('{' + key.toUpperCase() + '}', map[key]);
     }
     return t;
 }
@@ -1703,11 +2064,15 @@ function get(url, cb_load, arg, cb_timeout) {
         let param = {
             url : url,
             timeout : 5000,
-            headers : { 'user-agent' : 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1' },
+            headers : {},
             onload(xhr) { cb_load(url, xhr.responseText, arg, xhr); },
             onerror(xhr) { cb_timeout ? cb_timeout(url, arg, xhr) : console.log('error:' + url, xhr); },
             ontimeout(xhr) { cb_timeout ? cb_timeout(url, arg, xhr) : console.log('timeout:' + url, xhr); },
         };
+
+        if (arg.mobile) {
+            param.headers['user-agent'] = 'Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1';
+        }
 
         if (arg.host) {
             param.headers.Host = /https:\/\/([^/]+)/.exec(url)[1];
@@ -1737,7 +2102,7 @@ function on_play() {
         return;
     } else if (g_video != null) {
         g_hls.destroy();
-        delete g_hls;
+        //delete g_hls;
 
         g_video.pause();
         g_video.controls = false;
@@ -1749,6 +2114,22 @@ function on_play() {
     g_video.style.cursor = 'default';
 
     g_hls = new Hls({ id : this.id });
+/*
+    // 自定义请求头
+    const customHeaders = {
+        //'Access-Control-Allow-Origin' : '*',
+        'Host': 'vdo-avtaohua.sinw.net',
+        'Referer': 'https://7w85.avtaohua-t0876.vip/'
+    };
+
+    // 设置xhrSetup来添加请求头
+    g_hls.config.xhrSetup = (xhr, url) => {
+        console.log(url, xhr)
+        for (const [key, value] of Object.entries(customHeaders)) {
+            xhr.setRequestHeader(key, value);
+        }
+    };
+*/
     g_hls.attachMedia(this);
     g_hls.loadSource(this.id);
     g_hls.on(Hls.Events.MANIFEST_PARSED, function(){ g_video.play(); });
@@ -1803,21 +2184,26 @@ function cb_timeout(url, arg, xhr) {
     let id = arg.id;
     let step = arg.step;
     let timeout = ++arg.timeout;
-    let web = g_web[id];
-    let addr = web.addr;
-
-    console.log(id, arg.menu ? 'menu' : step, timeout, url, xhr.error);
+    let addr = url;
+    let err = xhr.error ? xhr.error : xhr;
 
     let ret = /Refused to connect to "(.+?)": (.+)/.exec(xhr.error);
 
     if (ret) {
-        if (ret[2] == 'Request was redirected to a not whitelisted URL') get(ret[1], cb_addr, arg, cb_timeout);
-        return;
+        err = ret[2];
+        if (ret[2] == 'Request was redirected to a not whitelisted URL') {
+            addr = ret[1];
+            err += '\t' + ret[1];
+        } else {
+            timeout = 3;
+        }
     }
+
+    console.log(id, arg.menu ? 'menu' : 'addr ' + step, url, err);
 
     if (timeout >= 3) return;
 
-    get(url, cb_addr, arg, cb_timeout);
+    get(addr, cb_addr, arg, cb_timeout);
 }
 
 function cb_menu(url, html, arg, xhr) {
@@ -1827,7 +2213,7 @@ function cb_menu(url, html, arg, xhr) {
 
     if (data.length <= 1) {
         console.log(id, 'menu.length <= 1', url, html);
-        return;
+        throw new Error();
     }
 
     menu(id, data);
@@ -1848,7 +2234,7 @@ function cb_addr(url, html, arg, xhr) {
 
     let next = web.addr.fun[step](url, html, arg, xhr);
 
-    console.log(id, step, url, next);
+    console.log(id, 'addr', step, next);
 
     if (step < (web.addr.fun.length - 1)) {
         arg.step++;
@@ -1885,15 +2271,17 @@ function addr(id) {
         }
     }
 
-    get(web.addr.beg, cb_addr, { id : id, step : 0, timeout : 0 }, cb_timeout);
+    let arg = web.addr.beg({ id : id, step : 0, timeout : 0 });
+
+    get(web.addr.url, cb_addr, arg, cb_timeout);
 }
 
 function cb_page(url, html, arg, xhr) {
     let id = arg.id;
     let web = g_web[id];
-    let htm = web.page.dec(html, arg);
-    let cnt = web.page.cnt(htm, arg);
-    let vod = web.page.fun(htm, arg);
+    let tmp = web.page.dec(html, arg);
+    let cnt = web.page.cnt(tmp, arg);
+    let vod = web.page.fun(tmp, arg);
 
     video(id, vod, g_data.first ? cnt : arg.page_id);
 
@@ -1907,7 +2295,7 @@ function page(data) {
 
     let url = rep(data.url, web.data);
 
-    console.log('url:', url);
+    //console.log('url:', url);
 
     get(url, cb_page, data);
 }
@@ -1931,12 +2319,6 @@ function on_change(keydown) {
     delete g_data.data;
     delete g_data.post;
 
-    let tmp = menu_item.getAttribute('data');
-
-    if (tmp) {
-        g_data.data = tmp;
-    }
-
     if (keydown && /^\d+$/.exec(input.value)) {
         g_data.page_id = Number(input.value);
     } else {
@@ -1954,7 +2336,15 @@ function on_change(keydown) {
         g_data.url = menu_item.getAttribute('url');
     }
 
+    let tmp = menu_item.getAttribute('data');
+
+    if (tmp) {
+        g_data.data = tmp;
+    }
+
     page(g_data);
 }
 
 main();
+
+})();
